@@ -239,9 +239,10 @@ header a {
 }
 
 .close {
+	font-size: 13px;
 	background-color: #0d58c8;
 	color: #fff;
-	padding: 5px 5px 2px;
+	padding: 7px 7px 4px;
 	text-decoration: none;
 	border-radius: 2px;
 }

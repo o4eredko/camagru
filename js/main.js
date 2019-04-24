@@ -1,5 +1,4 @@
-function switchElement(elem, option)
-{
+function switchElement(elem, option) {
 	if (!elem) return;
 	elem.style.display = (option) ? "block" : "none";
 }
@@ -9,12 +8,13 @@ var signUp = document.querySelectorAll(".sign-up-button");
 for (var i = signUp.length - 1; i >= 0; i--) {
 	signUp[i].onclick = function(e) {
 		e.preventDefault();
-		modal.classList.add("active");
+		if (modal) modal.classList.add("active");
 	}
 }
 
 function closeModal(e) {
 	if (e) e.preventDefault();
+	if (!modal) return ;
 	modal.classList.remove("active");
 }
 document.querySelector(".close").onclick = closeModal;
@@ -40,8 +40,14 @@ function validateForm(form) {
 registration.onsubmit = postRequest;
 function postRequest(e) {
 	e.preventDefault();
+	var err1 = document.querySelector("label[for='username']");
+	var err2 = document.querySelector("label[for='email']");
+	switchElement(err1, false);
+	switchElement(err2, false);
 	if (!validateForm(e.target)) return false;
 	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'registration.php', true);
+	xhr.send(new FormData(e.target));
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState != 4) {
 			switchElement(document.querySelector(".loading"), true);
@@ -50,12 +56,15 @@ function postRequest(e) {
 			if (xhr.status != 200) {
 				console.log("Ajax Post Request: Error");
 			} else {
-				console.log("Ajax Post Request: Success");
+				var arr = JSON.parse(xhr.responseText);
+				console.log(arr);
+				if (arr.user_exists || arr.email_exists) {
+					switchElement((arr.user_exists ? err1 : err2), true);
+					return false;
+				}
 			}
+			e.target.reset();
+			closeModal();
 		}
 	}
-	xhr.open('POST', 'registration.php', true);
-	xhr.send(new FormData(e.target));
-	e.target.reset();
-	closeModal();
 }
