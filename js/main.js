@@ -1,13 +1,69 @@
-var form = document.querySelector(".modal");
+function switchElement(elem, option)
+{
+	if (!elem) return;
+	elem.style.display = (option) ? "block" : "none";
+}
+
+var modal = document.querySelector(".modal");
 var signUp = document.querySelectorAll(".sign-up-button");
 for (var i = signUp.length - 1; i >= 0; i--) {
 	signUp[i].onclick = function(e) {
 		e.preventDefault();
-		form.classList.add("active");
+		modal.classList.add("active");
 	}
 }
 
-document.querySelector(".close").onclick = function(e) {
+function closeModal(e) {
+	if (e) e.preventDefault();
+	modal.classList.remove("active");
+}
+document.querySelector(".close").onclick = closeModal;
+
+function validateForm(form) {
+	var label = document.querySelector("label[for='pass']");
+	if (form.pass.value.length < 6) {
+		switchElement(label, true);
+		return false;
+	} else {
+		switchElement(label, false);
+	}
+	label = document.querySelector("label[for='repass']");
+	if (form.pass.value != form.repass.value) {
+		switchElement(label, true);
+		return false;
+	} else {
+		switchElement(label, false);
+	}
+	return true;
+}
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+registration.onsubmit = postRequest;
+function postRequest(e) {
 	e.preventDefault();
-	form.classList.remove("active");
+	if (!validateForm(e.target)) return false;
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState != 4) {
+			switchElement(document.querySelector(".loading"), true);
+		} else {
+			switchElement(document.querySelector(".loading"), false);
+			if (xhr.status != 200) {
+				console.log("Ajax Post Request: Error");
+			} else {
+				console.log("Ajax Post Request: Success");
+			}
+		}
+	}
+	xhr.open('POST', 'registration.php', true);
+	xhr.send(new FormData(e.target));
+	e.target.reset();
+	closeModal();
 }

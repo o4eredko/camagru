@@ -131,7 +131,7 @@
 	<div class="modal registration">
 		<div class="modal__content">
 			<div class="container">
-				<form action="register.php" method="POST" class="modal__form">
+				<form class="modal__form" id="registration">
 					<a href="#" class="close"><i class="fas fa-times"></i></a>
 					<h3>Register</h3>
 					<div class="row modal__form_row">
@@ -149,16 +149,19 @@
 						</div>
 						<div class="col-6">
 							<input type="password" name="pass" placeholder="Password" required>
+							<label for="pass">Password must be at least of length: 6</label>
 						</div>
 						<div class="col-6">
 							<input type="password" name="repass" placeholder="Repeat Password" required>
+							<label for="repass">Password and Repassword must be identical</label>
 						</div>
 					</div>
+					<img class="loading" src="img/loading.gif" alt="Camagru Loading">
 					<button class="button">Sign Up</button>
 				</form>
 			</div>
 		</div>
 	</div>
-	<script src="js/main.js"></script>
+	<script src="js/main.js" defer></script>
 </body>
 </html>

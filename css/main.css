@@ -11,7 +11,11 @@ ul, li {
 	display: block;
 }
 
-a {
+input:focus {
+	outline: none;
+}
+
+a, button, label {
 	transition: .15s ease-in all;
 }
 
@@ -276,14 +280,29 @@ header a {
 	padding: 14px 10px;
 	border: none;
 	border-radius: 2px;
-	color: #b4b7c1;
 	font-size: 15px;
 	font-weight: 300;
 	margin: 5px 0;
 	width: 100%;
 }
 
+.modal__form label {
+	color: #ff6767;
+	font-size: 13px;
+	font-weight: 300;
+	display: none;
+	margin-top: 5px;
+}
+
 .modal__form .button {
 	font-size: 15px;
 	margin-top: 30px;
+	padding: 15px 45px;
+}
+
+.loading {
+	display: none;
+	width: 60px;
+	height: 60px;
+	margin-top: 20px;
 }
