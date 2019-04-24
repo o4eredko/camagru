@@ -19,5 +19,6 @@ if ($stm1->rowCount() > 0) {
 	$values["pass"] = hash("whirlpool", $values["pass"]);
 	$stm = $pdo->prepare($sql);
 	$stm->execute($values);
+	mail($_POST["email"], "Confirm your E-mail", "You have to confirm you e-mail");
 }
 echo json_encode($res);
