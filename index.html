@@ -25,8 +25,8 @@
 					</nav>
 				</div>
 				<div class="col-3 d-flex justify-content-end">
-					<a href="#" class="button account__buttons"><i class="fas fa-user-alt"></i>Log in</a>
-					<a href="#" class="button account__buttons sign-up-button"><i class="fas fa-lock"></i>Sign up</a>
+					<a href="#" class="button account__buttons login__button"><i class="fas fa-user-alt"></i>Log in</a>
+					<a href="#" class="button account__buttons signup__button"><i class="fas fa-lock"></i>Sign up</a>
 				</div>
 			</div>
 		</div>
@@ -37,7 +37,7 @@
 				<div class="col">
 					<h1 class="main__title">Your Best Social Network</h1>
 					<p class="main__subtitle">Donec in rhoncus tortor. Sed tristique auctor ligula vel viverra</p>
-					<a href="#" class="button sign-up-button"><i class="fas fa-lock"></i>Sign up now</a>
+					<a href="#" class="button signup__button"><i class="fas fa-lock"></i>Sign up now</a>
 				</div>
 			</div>
 		</div>
@@ -128,10 +128,10 @@
 			
 		</div>
 	</footer>
-	<div class="modal registration">
+	<div class="modal" id="registration">
 		<div class="modal__content">
 			<div class="container">
-				<form class="modal__form" id="registration">
+				<form class="modal__form" id="registrationForm" onsubmit="sendRegistrationForm">
 					<a href="#" class="close"><i class="fas fa-times"></i></a>
 					<h3>Register</h3>
 					<div class="row modal__form_row">
@@ -160,6 +160,28 @@
 					</div>
 					<img class="loading" src="img/loading.gif" alt="Camagru Loading">
 					<button class="button">Sign Up</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="login">
+		<div class="modal__content">
+			<div class="container">
+				<form class="modal__form" id="loginForm">
+					<a href="#" class="close"><i class="fas fa-times"></i></a>
+					<h3>Log In</h3>
+					<div class="row modal__form_row">
+						<div class="col-6">
+							<input type="text" name="username" placeholder="Login" required>
+							<label for="username">Wrong username</label>
+						</div>
+						<div class="col-6">
+							<input type="password" name="pass" placeholder="Password" required>
+							<label for="pass">Wrong password</label>
+						</div>
+					</div>
+					<img class="loading" src="img/loading.gif" alt="Camagru Loading">
+					<button class="button">Log in</button>
 				</form>
 			</div>
 		</div>

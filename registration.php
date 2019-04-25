@@ -2,7 +2,6 @@
 
 require_once 'connect.php';
 
-header('Content-Type: text/json');
 $res = ['user_exists' => false, 'email_exists' => false];
 
 $stm1 = $pdo->prepare("SELECT * FROM users WHERE username = ?");
