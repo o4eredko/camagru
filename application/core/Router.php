@@ -15,15 +15,14 @@ class Router {
 	}
 
 	public function add($route, $params) {
-		$fullPath = explode('/', trim($_SERVER["REQUEST_URI"], '/'));
-		if (!empty($fullPath)) {
-			$dirname = $fullPath[0];
-			if (!empty($route))
-				$dirname .= '/';
-			$route = "#^$dirname" . $route . "$#";
-		} else {
-			$route = "#^" . $route . "$#";
-		}
+//		$fullPath = explode('/', trim($_SERVER["REQUEST_URI"], '/'));
+//		if (!empty($fullPath)) {
+//			$dirname = $fullPath[0];
+//			if (!empty($route))
+//				$dirname .= '/';
+//			$route = "#^$dirname" . $route . "$#";
+            $route = "#^" . $route . "$#";
+//		}
 		$this->routes[$route] = $params;
 	}
 
@@ -47,14 +46,14 @@ class Router {
 					$controller = new $path($this->params);
 					$controller->$action();
 				} else {
-					echo "Method " . $action . " not found";
+					View::errorCode(404);
 				}
 			} else {
-				echo $path . " not found";
-			}
+                View::errorCode(404);
+            }
 		} else {
-			echo "Ko";
-		}
+            View::errorCode(404);
+        }
 	}
 
 }

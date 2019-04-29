@@ -17,22 +17,31 @@ class View {
 	public function __construct($route) {
 		$this->route = $route;
 		$this->path = $route["controller"] . "/" . $route["action"];
-//		echo $this->path;
 	}
 
 	public function render($title, $vars = []) {
-		ob_start();
-		if (file_exists("application/views/" . $this->path . ".php")) {
-			require_once "application/views/" . $this->path . ".php";
-		} else {
-			echo "View doesn't exists";
-		}
-		$content = ob_get_clean();
-		if (file_exists("application/views/layouts/" . $this->layout . ".php")) {
-			require_once "application/views/layouts/" . $this->layout . ".php";
-		} else {
-			echo "Layout doesn't exists";
-		}
-	}
+	    extract($vars);
+        $path = "application/views/" . $this->path . ".php";
+        if (file_exists($path)) {
+            ob_start();
+            require_once $path;
+            $content = ob_get_clean();
+            require_once "application/views/layouts/" . $this->layout . ".php";
+        }
+    }
+
+    public static function errorCode($code) {
+	    http_response_code($code);
+	    $path = "application/views/errors/" . $code . ".php";
+	    if (file_exists($path)) {
+            require_once $path;
+        }
+	    exit;
+    }
+
+    public function redirect($url) {
+	    header("Location: $url");
+	    exit;
+    }
 
 }
