@@ -47,7 +47,7 @@ function validateForm(form) {
 
 	if (form.pass.value.length < 6) {
 		switchElement(label1, true);
-	} else if (form.pass.value != form.repass.value) {
+	} else if (form.pass.value !== form.repass.value) {
 		switchElement(label2, false);
 	} else {
 		return true;
@@ -67,11 +67,11 @@ function sendRegistrationForm(e) {
 	xhr.open('POST', 'registration.php', true);
 	xhr.send(new FormData(e.target));
 	xhr.onreadystatechange = function () {
-		if (xhr.readyState != 4) {
+		if (xhr.readyState !== 4) {
 			switchElement(document.querySelector("#registrationForm .loading"), true);
 		} else {
 			switchElement(document.querySelector("#registrationForm .loading"), false);
-			if (xhr.status != 200) {
+			if (xhr.status !== 200) {
 				console.log("Ajax Post Request: Error");
 			} else {
 				var arr = JSON.parse(xhr.responseText);
@@ -94,14 +94,14 @@ function sendLoginForm(e) {
 	switchElement(err2, false);
 
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'login.php', true);
+	xhr.open('POST', 'application/core/Controller.php', true);
 	xhr.send(new FormData(e.target));
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState != 4) {
+		if (xhr.readyState !== 4) {
 			switchElement(document.querySelector("#loginForm .loading"), true);
 		} else {
 			switchElement(document.querySelector("#loginForm .loading"), false);
-			if (xhr.status != 200) {
+			if (xhr.status !== 200) {
 				console.log("Ajax Post Request: Error");
 			} else {
 				var arr = JSON.parse(xhr.responseText);

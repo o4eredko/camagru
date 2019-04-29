@@ -24,7 +24,17 @@ class Controller {
 	    $path = "application\models\\" . ucfirst($name);
         if (class_exists($path)) {
 	        return new $path;
-        }
+        } else {
+        	View::errorCode(404);
+		}
     }
 
+}
+
+if (!empty($_GET["switch"])) {
+	switch ($_GET["switch"]) {
+		case "login":
+			$this->rout
+			break ;
+	}
 }
