@@ -11,6 +11,10 @@ return [
 		"controller" => "main",
 		"action" => "index",
 	],
+	"ajax.php" => [
+		"controller" => "ajax",
+		"action" => "request",
+	],
 	"account/login" => [
 		"controller" => "account",
 		"action" => "login",

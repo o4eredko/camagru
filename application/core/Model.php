@@ -6,10 +6,12 @@ use application\lib\Db;
 
 abstract class Model {
 
-    public $db;
+    protected $db;
+    protected $pdo;
 
     public function __construct() {
         $this->db = new Db;
+        $this->pdo = $this->db->getConnection();
     }
 
 }

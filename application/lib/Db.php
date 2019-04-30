@@ -5,16 +5,15 @@ use PDO;
 
 class Db {
 
-    protected $db;
+    protected $pdo;
 
     public function __construct() {
         require "application/config/db.php";
-        $this->db = new PDO($DB_DSN, $DB_USER, $DB_PASSWORD, $DB_OPT);
-        return $this->db;
+        $this->pdo = new PDO($DB_DSN, $DB_USER, $DB_PASSWORD, $DB_OPT);
     }
 
     public function query($sql, $params = []) {
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
         if (!empty($params)) {
             foreach ($params as $key => $val) {
                 $stmt->bindValue(":$key", $val);
@@ -38,5 +37,22 @@ class Db {
         $result = $this->query($sql, $params);
         return $result->fetchColumn();
     }
+
+	public function pdoSet($allowed, &$values, $source = array()) {
+		$set = '';
+		$values = array();
+		if (!$source) $source = &$_POST;
+		foreach ($allowed as $field) {
+			if (isset($source[$field])) {
+				$set.="`".str_replace("`","``",$field)."`". "=:$field, ";
+				$values[$field] = $source[$field];
+			}
+		}
+		return substr($set, 0, -2);
+	}
+
+    public function getConnection() {
+    	return $this->pdo;
+	}
 
 }

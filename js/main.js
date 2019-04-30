@@ -48,7 +48,7 @@ function validateForm(form) {
 	if (form.pass.value.length < 6) {
 		switchElement(label1, true);
 	} else if (form.pass.value !== form.repass.value) {
-		switchElement(label2, false);
+		switchElement(label2, true);
 	} else {
 		return true;
 	}
@@ -57,15 +57,17 @@ function validateForm(form) {
 
 function sendRegistrationForm(e) {
 	e.preventDefault();
-	var err1 = e.target.username.nextElementSibling;
-	var err2 = e.target.email.nextElementSibling;
+	let err1 = e.target.username.nextElementSibling;
+	let err2 = e.target.email.nextElementSibling;
 	switchElement(err1, false);
 	switchElement(err2, false);
 	if (!validateForm(e.target)) return false;
+	let form = new FormData(e.target);
+	form.append("action", "register");
 
-	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'registration.php', true);
-	xhr.send(new FormData(e.target));
+	let xhr = new XMLHttpRequest();
+	xhr.open('POST', 'ajax.php', true);
+	xhr.send(form);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState !== 4) {
 			switchElement(document.querySelector("#registrationForm .loading"), true);
@@ -88,14 +90,16 @@ function sendRegistrationForm(e) {
 
 function sendLoginForm(e) {
 	e.preventDefault();
-	var err1 = e.target.username.nextElementSibling;
-	var err2 = e.target.pass.nextElementSibling;
+	let err1 = e.target.username.nextElementSibling;
+	let err2 = e.target.pass.nextElementSibling;
 	switchElement(err1, false);
 	switchElement(err2, false);
+	let form = new FormData(e.target);
+	form.append("action", "login");
 
-	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'application/core/Controller.php', true);
-	xhr.send(new FormData(e.target));
+	let xhr = new XMLHttpRequest();
+	xhr.open('POST', 'ajax.php', true);
+	xhr.send(form);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState !== 4) {
 			switchElement(document.querySelector("#loginForm .loading"), true);

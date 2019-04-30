@@ -120,7 +120,7 @@
 <div class="modal" id="registration">
     <div class="modal__content">
         <div class="container">
-            <form action="account/register" class="modal__form" id="registrationForm">
+            <form class="modal__form" id="registrationForm">
                 <a href="#" class="close"><i class="fas fa-times"></i></a>
                 <h3>Register</h3>
                 <div class="row modal__form_row">
