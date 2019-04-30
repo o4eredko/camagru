@@ -8,9 +8,9 @@ use application\core\View;
 class AjaxController extends Controller {
 
 	public function requestAction() {
-		$actionName = $_POST["action"];
-		$params = $_POST;
-		unset($_POST["action"]);
+		$actionName = $_REQUEST["action"];
+		$params = $_REQUEST;
+		unset($_REQUEST["action"]);
 		if ($this->model && method_exists($this->model, $actionName)) {
 			$this->model->$actionName($params);
 		} else {

@@ -126,7 +126,7 @@
                 <div class="row modal__form_row">
                     <div class="col-6">
                         <input type="text" name="username" placeholder="Login" required>
-                        <label for="username">User with this username already exists</label>
+                        <label hidden for="username">User with this username already exists</label>
                     </div>
                     <div class="col-6">
                         <input type="text" name="name" placeholder="First Name" required>
@@ -136,18 +136,21 @@
                     </div>
                     <div class="col-6">
                         <input type="email" name="email" placeholder="Email" required>
-                        <label for="email">User with this email already exists</label>
+                        <label hidden for="email">User with this email already exists</label>
                     </div>
                     <div class="col-6">
                         <input type="password" name="pass" placeholder="Password" required>
-                        <label for="pass">Password must be at least of length: 6</label>
+                        <label hidden for="pass">Password must be at least of length: 6</label>
                     </div>
                     <div class="col-6">
                         <input type="password" name="repass" placeholder="Repeat Password" required>
-                        <label for="repass">Password and Repassword must be identical</label>
+                        <label hidden for="repass">Password and Repassword must be identical</label>
                     </div>
                 </div>
                 <img class="loading" src="img/loading.gif" alt="Camagru Loading">
+                <p class="form__confirmation" hidden>
+                    Registration is almost done. You should confirm your e-mail.
+                </p>
                 <button class="button">Sign Up</button>
             </form>
         </div>
@@ -162,14 +165,15 @@
                 <div class="row modal__form_row">
                     <div class="col-6">
                         <input type="text" name="username" placeholder="Login" required>
-                        <label for="username">Wrong username</label>
+                        <label hidden for="username">Wrong username</label>
                     </div>
                     <div class="col-6">
                         <input type="password" name="pass" placeholder="Password" required>
-                        <label for="pass">Wrong password</label>
+                        <label hidden for="pass">Wrong password</label>
                     </div>
                 </div>
                 <img class="loading" src="img/loading.gif" alt="Camagru Loading">
+                <p class="form__confirmation"></p>
                 <button class="button">Log in</button>
             </form>
         </div>

@@ -1,10 +1,5 @@
 /*-----------------Events-----------------*/
 
-function switchElement(elem, option) {
-	if (!elem) return;
-	elem.style.display = (option) ? "block" : "none";
-}
-
 var signUp = document.querySelectorAll(".signup__button");
 for (var i = signUp.length - 1; i >= 0; i--) {
 	signUp[i].onclick = function(e) {
@@ -42,13 +37,12 @@ if (logIn && document.getElementById("login")) {
 function validateForm(form) {
 	var label1 = form.pass.nextElementSibling;
 	var label2 = form.repass.nextElementSibling;
-	switchElement(label1, false);
-	switchElement(label2, false);
+	label1.hidden = label2.hidden = true;
 
 	if (form.pass.value.length < 6) {
-		switchElement(label1, true);
+		label1.hidden = false;
 	} else if (form.pass.value !== form.repass.value) {
-		switchElement(label2, true);
+		label2.hidden = false;
 	} else {
 		return true;
 	}
@@ -57,10 +51,11 @@ function validateForm(form) {
 
 function sendRegistrationForm(e) {
 	e.preventDefault();
+	let loading = document.querySelector("#registrationForm .loading");
 	let err1 = e.target.username.nextElementSibling;
 	let err2 = e.target.email.nextElementSibling;
-	switchElement(err1, false);
-	switchElement(err2, false);
+	let confirmation = document.querySelector("#registrationForm .form__confirmation");
+	err1.hidden = err2.hidden = confirmation.hidden = true;
 	if (!validateForm(e.target)) return false;
 	let form = new FormData(e.target);
 	form.append("action", "register");
@@ -70,30 +65,29 @@ function sendRegistrationForm(e) {
 	xhr.send(form);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState !== 4) {
-			switchElement(document.querySelector("#registrationForm .loading"), true);
+			if (loading) loading.classList.add("d-block");
 		} else {
-			switchElement(document.querySelector("#registrationForm .loading"), false);
+			if (loading) loading.classList.remove("d-block");
 			if (xhr.status !== 200) {
 				console.log("Ajax Post Request: Error");
 			} else {
-				var arr = JSON.parse(xhr.responseText);
-				if (arr.user_exists || arr.email_exists) {
-					switchElement((arr.user_exists ? err1 : err2), true);
-					return false;
-				}
+				let arr = JSON.parse(xhr.responseText);
+				if (arr.user_exists || arr.email_exists)
+					return ((arr.user_exists ? err1 : err2).hidden = false);
 			}
 			e.target.reset();
-			registration.classList.remove("active");
+			confirmation.hidden = false;
 		}
 	}
 }
 
 function sendLoginForm(e) {
 	e.preventDefault();
+	let loading = document.querySelector("#loginForm .loading");
 	let err1 = e.target.username.nextElementSibling;
 	let err2 = e.target.pass.nextElementSibling;
-	switchElement(err1, false);
-	switchElement(err2, false);
+	let confirmation = document.querySelector("#loginForm .form__confirmation");
+	err1.hidden = err2.hidden = true;
 	let form = new FormData(e.target);
 	form.append("action", "login");
 
@@ -102,23 +96,64 @@ function sendLoginForm(e) {
 	xhr.send(form);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState !== 4) {
-			switchElement(document.querySelector("#loginForm .loading"), true);
+			if (loading) loading.classList.add("d-block");
 		} else {
-			switchElement(document.querySelector("#loginForm .loading"), false);
+			if (loading) loading.classList.remove("d-block");
 			if (xhr.status !== 200) {
 				console.log("Ajax Post Request: Error");
 			} else {
-				var arr = JSON.parse(xhr.responseText);
-				if (arr.wrong_user || arr.wrong_pass) {
-					switchElement((arr.wrong_user ? err1 : err2), true);
+				let arr = JSON.parse(xhr.responseText);
+				if (arr.wrong_user || arr.wrong_pass)
+					return ((arr.wrong_user ? err1 : err2).hidden = false);
+				else if (!arr.email_confirmed) {
+					if (confirmation) confirmation.textContent = "You have to confirm you e-mail first";
 					return false;
 				}
+				login.classList.remove("active");
 			}
 			e.target.reset();
-			login.classList.remove("active");
 		}
 	}
 }
 
 if (registrationForm) registrationForm.onsubmit = sendRegistrationForm;
 if (loginForm) loginForm.onsubmit = sendLoginForm;
+
+
+/*-----------------GET-----------------*/
+
+var parts = window.location.search.substr(1).split("&");
+var $_GET = {};
+for (var i = 0; i < parts.length; i++) {
+	var temp = parts[i].split("=");
+	$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+}
+
+/*-----------------Verification-----------------*/
+
+function showVerificationStatus() {
+	let confirmation = document.querySelector("#loginForm .form__confirmation");
+
+	if (login) login.classList.add("active");
+	let xhr = new XMLHttpRequest();
+	xhr.open('GET', 'ajax.php' + window.location.search, true);
+	xhr.send();
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && confirmation) {
+			confirmation.hidden = false;
+			if (xhr.status !== 200) {
+				confirmation.textContent = "Something was wrong";
+			} else {
+				if (xhr.responseText === "Done") {
+					confirmation.textContent = "E-mail was confirmed! You can now log-in";
+				} else {
+					confirmation.textContent = "Something was wrong";
+				}
+			}
+		}
+	}
+}
+
+if ($_GET["action"] === "verificate" && $_GET["id"] !== undefined) {
+	showVerificationStatus();
+}

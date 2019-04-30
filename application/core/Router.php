@@ -21,7 +21,7 @@ class Router {
 //			if (!empty($route))
 //				$dirname .= '/';
 //			$route = "#^$dirname" . $route . "$#";
-            $route = "#^" . $route . "$#";
+            $route = "#^" . $route . "(\?.*|$)#";
 //		}
 		$this->routes[$route] = $params;
 	}

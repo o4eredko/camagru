@@ -33,9 +33,9 @@ class Db {
         return $result->fetch();
     }
 
-    public function column($sql, $params = []) {
+    public function column($sql, $params = [], $id = 0) {
         $result = $this->query($sql, $params);
-        return $result->fetchColumn();
+        return $result->fetchColumn($id);
     }
 
 	public function pdoSet($allowed, &$values, $source = array()) {
