@@ -9,18 +9,14 @@
 return [
 	"" => [
 		"controller" => "main",
-		"action" => "index",
+		"action" => "index"
 	],
-	"ajax.php" => [
+	"logout" => [
+		"controller" => "main",
+		"action" => "logout"
+	],
+	"ajax" => [
 		"controller" => "ajax",
-		"action" => "request",
-	],
-	"account/login" => [
-		"controller" => "account",
-		"action" => "login",
-	],
-	"account/register" => [
-		"controller" => "account",
-		"action" => "register",
-	],
+		"action" => "request"
+	]
 ];

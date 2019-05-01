@@ -7,50 +7,60 @@ use application\core\Model;
 class Ajax extends Model {
 
 	public function register($params) {
-		$res = ['user_exists' => false, 'email_exists' => false];
-		$stm1 = $this->db->query("SELECT id FROM users WHERE username = :username",
-			["username" => $params["username"]]);
-		$stm2 = $this->db->query("SELECT id FROM users WHERE email = :email",
-			["email" => $params["email"]]);
+		$res = [];
+		$res["user_exists"] = $this->usernameExists($params["username"]);
+		$res['email_exists'] = $this->emailExists($params["email"]);
 
-		if ($stm1->rowCount() > 0) {
-			$res["user_exists"] = true;
-		} else if ($stm2->rowCount() > 0) {
-			$res["email_exists"] = true;
-		} else {
+		if (!$res["user_exists"] && !$res["email_exists"]) {
 			$params["token"] = $this->generateToken(10);
 			$params["pass"] = hash("whirlpool", $params["pass"]);
 			$allowed = array("username", "name", "surname", "email", "pass", "token");
-			$sql = "INSERT INTO users SET " . $this->db->pdoSet($allowed, $values, $params);
+			$sql = "INSERT INTO `users` SET " . $this->db->pdoSet($allowed, $values, $params);
 			$this->db->query($sql, $values);
-			$id = $this->db->column("SELECT id FROM users WHERE username = :username",
-				["username" => $params["username"]]);
-			$this->sendVerification($id, $params["email"], $params["token"]);
+			$sql = "SELECT id FROM `users` WHERE username = ?";
+			$id = $this->db->column($sql, [$params["username"]]);
+//			$this->sendVerification($id, $params["email"], $params["token"]);
 		}
 		echo json_encode($res);
 	}
 
 	public function login($params) {
-		$res = ["wrong_user" => false, "wrong_pass" => false, "email_confirmed"=> false];
+		$res = [];
+		$res["wrong_user"] = !$this->usernameExists($params["username"]);
+		$res["wrong_pass"] = !$this->passwordsEqual($params["username"], $params["pass"]);
+		$res["email_confirmed"] = $this->emailConfirmed(NULL, $params["username"]);
 
-		$stm = $this->pdo->prepare("SELECT pass, status FROM `users` WHERE username = ?");
-		$stm->execute([$params["username"]]);
-		if (!$stm->rowCount()) {
-			$res["wrong_user"] = true;
-		} else if ($stm->fetchColumn(0) != hash("whirlpool", $params["pass"])) {
-			$res["wrong_pass"] = true;
-		} else if ($stm->fetchColumn(1) == "confirmed") {
-			$res["email_confirmed"] = true;
-		} else {}
+		if (!$res["wrong_user"] && !$res["wrong_pass"] && $res["email_confirmed"]) {
+			$_SESSION["user"] = $params["username"];
+		}
+		echo json_encode($res);
+	}
+
+	public function change($params) {
+		$res = ["user_exists" => false, "email_exists" => false];
+		$sql = "SELECT * FROM `users` WHERE username = ?";
+		$user = $this->db->row($sql, [$_SESSION["user"]]);
+		$res["wrong_oldpass"] = ($user["pass"] == hash("whirlpool", $params["oldpass"]));
+		$res["email_confirmed"] = ($user["status"] == "confirmed");
+		if ($params["newuser"] != $user["username"])
+			$res["user_exists"] = $this->usernameExists($params["newuser"]);
+		if ($params["newemail"] != $user["email"])
+			$res["email_exists"] = $this->emailExists($params["newemail"]);
+		if (!$res["wrong_oldpass"] && $res["email_confirmed"] &&
+			!$res["user_exists"] && !$res["email_exists"]) {
+			$sql = "UPDATE `users` SET username = ?, name = ?, surname = ?, email = ?, pass = ? WHERE id = ?";
+			$this->db->query($sql, $params);
+		}
 		echo json_encode($res);
 	}
 
 	public function verificate() {
 		if (!empty($_GET["id"]) && !empty($_GET["token"])) {
-			$res = $this->db->column("SELECT token FROM users WHERE id = :id", ["id" => $_GET["id"]]);
+			$sql = "SELECT token FROM `users` WHERE id = ?";
+			$res = $this->db->column($sql, [$_GET["id"]]);
 			if ($res === $_GET["token"]) {
-				$this->db->query("UPDATE users SET status = :status WHERE id = :id",
-					["status" => "confirmed", "id" => $_GET["id"]]);
+				$sql = "UPDATE `users` SET status = 'confirmed' WHERE id = ?";
+				$this->db->query($sql, [$_GET["id"]]);
 				echo "Done";
 			} else {
 				echo "Wrong Token";
@@ -79,6 +89,40 @@ class Ajax extends Model {
 			$res .= $chars[rand(0, $charsLen - 1)];
 		}
 		return $res;
+	}
+
+	private function usernameExists($username) {
+		$sql = "SELECT id FROM `users` WHERE username = ?";
+		$res = $this->db->row($sql, [$username]);
+		if (!$res) return false;
+		return (!$res ? false : true);
+	}
+
+
+	private function emailExists($email) {
+		$sql = "SELECT id FROM `users` WHERE email = ?";
+		$res = $this->db->row($sql, [$email]);
+		if (!$res) return false;
+		return (!$res ? false : true);
+	}
+
+	private function passwordsEqual($username, $newpass) {
+		$sql = "SELECT pass FROM `users` WHERE username = ?";
+		$res = $this->db->row($sql, [$username]);
+		if (!$res) return false;
+		return ($res["pass"] == hash("whirlpool", $newpass));
+	}
+
+	private function emailConfirmed($email, $username) {
+		if ($email) {
+			$sql = "SELECT status FROM `users` WHERE email = ?";
+			$res = $this->db->row($sql, [$email]);
+		} else {
+			$sql = "SELECT status FROM `users` WHERE username = ?";
+			$res = $this->db->row($sql, [$username]);
+		}
+		if (!$res) return false;
+		return ($res["status"] == "confirmed");
 	}
 
 }

@@ -1,79 +1,56 @@
 /*-----------------Events-----------------*/
 
-var signUp = document.querySelectorAll(".signup__button");
-for (var i = signUp.length - 1; i >= 0; i--) {
-	signUp[i].onclick = function(e) {
-		e.preventDefault();
-		if (registration) registration.classList.add("active");
-	}
-}
-
-function closeModal(event) {
+document.onclick = function(event) {
+	let id = this.activeElement.getAttribute("data-toggle-id");
+	if (!id) return ;
 	event.preventDefault();
-	var target = event.target;
-
-	while (target.parentNode && !target.classList.contains("modal")) {
-		target = target.parentNode;
-	}
-	if (target.classList.contains("modal")) {
-		target.classList.remove("active");
-	}
-}
-var closeButtons = document.querySelectorAll(".close");
-for (var i = closeButtons.length - 1; i >= 0; i--) {
-	closeButtons[i].onclick = closeModal;
-}
-
-var logIn = document.querySelector(".login__button");
-if (logIn && document.getElementById("login")) {
-	logIn.onclick = function(event) {
-		event.preventDefault();
-		login.classList.add("active");
-	}
-}
+	let elem = document.getElementById(id);
+	elem.classList.toggle("active");
+};
 
 /*-----------------Forms-----------------*/
 
-function validateForm(form) {
-	var label1 = form.pass.nextElementSibling;
-	var label2 = form.repass.nextElementSibling;
-	label1.hidden = label2.hidden = true;
-
-	if (form.pass.value.length < 6) {
-		label1.hidden = false;
-	} else if (form.pass.value !== form.repass.value) {
-		label2.hidden = false;
-	} else {
-		return true;
+function getLabels(form) {
+	if (!form) return;
+	let labels = {};
+	for (let i = form.elements.length - 1; i >= 0; i--) {
+		if (form.elements[i].nextElementSibling) {
+			labels[form.elements[i].name] = form.elements[i].nextElementSibling;
+		}
 	}
-	return false;
+	return labels;
+}
+
+function validateForm(form, labels) {
+	if (form.pass && labels.pass)
+		labels.pass.hidden = (form.pass.value.length >= 6);
+	if (form.pass && form.repass && labels.repass)
+		labels.repass.hidden = (form.pass.value === form.repass.value);
+	return labels.pass.hidden && labels.repass.hidden;
 }
 
 function sendRegistrationForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#registrationForm .loading");
-	let err1 = e.target.username.nextElementSibling;
-	let err2 = e.target.email.nextElementSibling;
+	let labels = getLabels(e.target);
 	let confirmation = document.querySelector("#registrationForm .form__confirmation");
-	err1.hidden = err2.hidden = confirmation.hidden = true;
-	if (!validateForm(e.target)) return false;
+	if (!validateForm(e.target, labels)) return ;
 	let form = new FormData(e.target);
 	form.append("action", "register");
-
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', 'ajax.php', true);
+
+	xhr.open('POST', 'ajax', true);
 	xhr.send(form);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState !== 4) {
 			if (loading) loading.classList.add("d-block");
 		} else {
 			if (loading) loading.classList.remove("d-block");
-			if (xhr.status !== 200) {
-				console.log("Ajax Post Request: Error");
-			} else {
+			if (xhr.status === 200) {
 				let arr = JSON.parse(xhr.responseText);
-				if (arr.user_exists || arr.email_exists)
-					return ((arr.user_exists ? err1 : err2).hidden = false);
+				labels.username.hidden = !arr.user_exists;
+				labels.email.hidden = !arr.email_exists;
+				if (arr.user_exists || arr.email_exists) return ;
 			}
 			e.target.reset();
 			confirmation.hidden = false;
@@ -84,48 +61,78 @@ function sendRegistrationForm(e) {
 function sendLoginForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#loginForm .loading");
-	let err1 = e.target.username.nextElementSibling;
-	let err2 = e.target.pass.nextElementSibling;
+	let labels = getLabels(e.target);
 	let confirmation = document.querySelector("#loginForm .form__confirmation");
-	err1.hidden = err2.hidden = true;
 	let form = new FormData(e.target);
 	form.append("action", "login");
-
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', 'ajax.php', true);
+
+	xhr.open('POST', 'ajax', true);
 	xhr.send(form);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState !== 4) {
 			if (loading) loading.classList.add("d-block");
 		} else {
 			if (loading) loading.classList.remove("d-block");
-			if (xhr.status !== 200) {
-				console.log("Ajax Post Request: Error");
-			} else {
+			if (xhr.status === 200) {
 				let arr = JSON.parse(xhr.responseText);
-				if (arr.wrong_user || arr.wrong_pass)
-					return ((arr.wrong_user ? err1 : err2).hidden = false);
-				else if (!arr.email_confirmed) {
-					if (confirmation) confirmation.textContent = "You have to confirm you e-mail first";
-					return false;
-				}
-				login.classList.remove("active");
+				labels.username.hidden = !arr.wrong_user;
+				labels.pass.hidden = !arr.wrong_pass;
+				if (arr.wrong_user || arr.wrong_pass) return ;
+				confirmation.hidden = arr.email_confirmed;
+				if (!arr.email_confirmed) return ;
+				location.reload();
 			}
-			e.target.reset();
 		}
 	}
 }
 
-if (registrationForm) registrationForm.onsubmit = sendRegistrationForm;
-if (loginForm) loginForm.onsubmit = sendLoginForm;
+function sendChangeForm(e) {
+	e.preventDefault();
+	let loading = document.querySelector("#loginForm .loading");
+	let labels = getLabels(e.target);
+	let confirmation = document.querySelector("#loginForm .form__confirmation");
+	if (!validateForm(e.target, labels)) return;
+	let form = new FormData(e.target);
+	form.append("action", "change");
+	let xhr = new XMLHttpRequest();
 
+	xhr.open('POST', 'ajax', true);
+	xhr.send(form);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState !== 4) {
+			if (loading) loading.classList.add("d-block");
+		} else {
+			if (loading) loading.classList.remove("d-block");
+			if (xhr.status === 200) {
+				let arr = JSON.parse(xhr.responseText);
+				labels.newuser.hidden = !arr.user_exists;
+				labels.newemail.hidden = !arr.email_exists;
+				labels.oldpass.hidden = !arr.wrong_oldpass;
+				if (arr.user_exists || arr.email_exists || arr.wrong_oldpass) return ;
+				confirmation.hidden = arr.email_confirmed;
+				if (!arr.email_confirmed) return false;
+			}
+			e.target.reset();
+			document.getElementById("settings").classList.remove("active");
+		}
+	}
+}
+
+let elem;
+if ((elem = document.getElementById("registrationForm")))
+	elem.onsubmit = sendRegistrationForm;
+if ((elem = document.getElementById("loginForm")))
+	elem.onsubmit = sendLoginForm;
+if ((elem = document.getElementById("changeForm")))
+	elem.onsubmit = sendChangeForm;
 
 /*-----------------GET-----------------*/
 
-var parts = window.location.search.substr(1).split("&");
-var $_GET = {};
-for (var i = 0; i < parts.length; i++) {
-	var temp = parts[i].split("=");
+let parts = window.location.search.substr(1).split("&");
+let $_GET = {};
+for (let i = 0; i < parts.length; i++) {
+	let temp = parts[i].split("=");
 	$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
 }
 
@@ -136,7 +143,7 @@ function showVerificationStatus() {
 
 	if (login) login.classList.add("active");
 	let xhr = new XMLHttpRequest();
-	xhr.open('GET', 'ajax.php' + window.location.search, true);
+	xhr.open('GET', 'ajax' + window.location.search, true);
 	xhr.send();
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && confirmation) {

@@ -15,14 +15,7 @@ class Router {
 	}
 
 	public function add($route, $params) {
-//		$fullPath = explode('/', trim($_SERVER["REQUEST_URI"], '/'));
-//		if (!empty($fullPath)) {
-//			$dirname = $fullPath[0];
-//			if (!empty($route))
-//				$dirname .= '/';
-//			$route = "#^$dirname" . $route . "$#";
-            $route = "#^" . $route . "(\?.*|$)#";
-//		}
+		$route = "#^" . BASE_DIR . '/*' . $route . "(\?.*|$)#";
 		$this->routes[$route] = $params;
 	}
 
@@ -51,9 +44,7 @@ class Router {
 			} else {
                 View::errorCode(404);
             }
-		} else {
-            View::errorCode(404);
-        }
+		}
 	}
 
 }

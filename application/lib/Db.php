@@ -14,12 +14,7 @@ class Db {
 
     public function query($sql, $params = []) {
         $stmt = $this->pdo->prepare($sql);
-        if (!empty($params)) {
-            foreach ($params as $key => $val) {
-                $stmt->bindValue(":$key", $val);
-            }
-        }
-        $stmt->execute();
+        $stmt->execute($params);
         return $stmt;
     }
 
@@ -30,7 +25,7 @@ class Db {
 
     public function row($sql, $params = []) {
         $result = $this->query($sql, $params);
-        return $result->fetch();
+        return $result->fetch(PDO::FETCH_LAZY);
     }
 
     public function column($sql, $params = [], $id = 0) {
