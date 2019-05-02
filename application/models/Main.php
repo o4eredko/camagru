@@ -22,4 +22,9 @@ class Main extends Model {
 		return [];
 	}
 
+	public function getPosts() {
+		$response = $this->pdo->query("SELECT * FROM `posts`");
+		return $response->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 }

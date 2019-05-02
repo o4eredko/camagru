@@ -13,8 +13,8 @@ class AjaxController extends Controller {
 		} else {
 			$actionName = "";
 		}
-		$params = $_REQUEST;
 		unset($_REQUEST["action"]);
+		$params = $_REQUEST;
 		if ($this->model && method_exists($this->model, $actionName)) {
 			$this->model->$actionName($params);
 		} else {

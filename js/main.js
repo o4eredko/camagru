@@ -22,7 +22,7 @@ function getLabels(form) {
 }
 
 function validateForm(form, labels) {
-	if (form.pass && labels.pass)
+	if (form.pass && labels.pass && form.pass.value.length)
 		labels.pass.hidden = (form.pass.value.length >= 6);
 	if (form.pass && form.repass && labels.repass)
 		labels.repass.hidden = (form.pass.value === form.repass.value);
@@ -81,7 +81,7 @@ function sendLoginForm(e) {
 				if (arr.wrong_user || arr.wrong_pass) return ;
 				confirmation.hidden = arr.email_confirmed;
 				if (!arr.email_confirmed) return ;
-				location.reload();
+				location.replace(location.origin);
 			}
 		}
 	}
@@ -89,9 +89,9 @@ function sendLoginForm(e) {
 
 function sendChangeForm(e) {
 	e.preventDefault();
-	let loading = document.querySelector("#loginForm .loading");
+	let loading = document.querySelector("#changeForm .loading");
 	let labels = getLabels(e.target);
-	let confirmation = document.querySelector("#loginForm .form__confirmation");
+	let confirmation = document.querySelector("#changeForm .form__confirmation");
 	if (!validateForm(e.target, labels)) return;
 	let form = new FormData(e.target);
 	form.append("action", "change");
@@ -111,10 +111,9 @@ function sendChangeForm(e) {
 				labels.oldpass.hidden = !arr.wrong_oldpass;
 				if (arr.user_exists || arr.email_exists || arr.wrong_oldpass) return ;
 				confirmation.hidden = arr.email_confirmed;
-				if (!arr.email_confirmed) return false;
+				if (!arr.email_confirmed) return ;
 			}
-			e.target.reset();
-			document.getElementById("settings").classList.remove("active");
+			location.reload();
 		}
 	}
 }
@@ -161,6 +160,7 @@ function showVerificationStatus() {
 	}
 }
 
-if ($_GET["action"] === "verificate" && $_GET["id"] !== undefined) {
+if (document.querySelector(".login__button") &&
+	$_GET["action"] === "verificate" && $_GET["id"] !== undefined) {
 	showVerificationStatus();
 }

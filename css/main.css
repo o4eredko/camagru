@@ -5,6 +5,7 @@ body, ul, li, p, h1, h2, h3 {
 
 body {
 	font-family: 'HelveticaNeueCyr';
+	margin-top: 75px;
 }
 
 ul, li {
@@ -13,6 +14,23 @@ ul, li {
 
 input:focus {
 	outline: none;
+}
+
+input {
+	padding: 14px 10px;
+	border: none;
+	border-radius: 2px;
+	font-size: 15px;
+	font-weight: 300;
+	margin: 5px 0;
+	width: 100%;
+}
+
+label {
+	color: #ff6767;
+	font-size: 13px;
+	font-weight: 300;
+	margin-top: 5px;
 }
 
 a, button, label {
@@ -106,7 +124,6 @@ header a {
 /*-----------------Title-----------------*/
 
 #title {
-	margin-top: 75px;
 	padding: 130px 0 180px;
 	background: url(../img/bg.jpg) no-repeat center center/cover;
 	position: relative;
@@ -217,6 +234,94 @@ header a {
 	background-color: #f6f6f6;
 }
 
+/*-----------------Add Photo-----------------*/
+#add_photo {
+	padding-top: 30px;
+}
+
+.add_photo__form {
+	border: 1px solid #edeff2;
+	position: relative;
+}
+
+.add_photo__title {
+	background-color: #f6f6f6;
+	font-size: 14px;
+	line-height: 18px;
+	color: #383b43;
+	padding: 15px 30px;
+}
+
+.add_photo__form .form__content {
+	padding: 25px;
+}
+
+.add_photo__area {
+	position: relative;
+	height: 350px;
+	background-color: #f6f6f6;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.add_photo__area:hover {
+	border: 1px solid #000;
+}
+
+.add_photo__form i {
+	font-size: 3vw;
+}
+
+.add_photo__file {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+.add_photo__form input, .add_photo__form textarea {
+	background-color: #f6f6f6;
+	color: #000;
+	font-weight: 400;
+}
+
+.add_photo__form input::placeholder, .add_photo__form textarea::placeholder {
+	color: #4f4f4f;
+	font-weight: 300;
+}
+
+.add_photo__form textarea {
+	padding: 14px 10px;
+	border: none;
+	border-radius: 2px;
+	font-weight: 300;
+	width: 100%;
+	font-size: 15px;
+	height: 150px;
+	resize: none;
+	outline: none;
+}
+
+.add_photo__form button {
+	color: #0d58c8;
+	background-color: transparent;
+	margin-top: 20px;
+	padding: 15px 30px;
+	font-size: 15px;
+	font-weight: 400;
+}
+
+.add_photo__form button:hover {
+	background-color: #0d58c8;
+	color: #fff;
+}
+
 /*-----------------Modal-----------------*/
 .modal {
 	position: fixed;
@@ -278,23 +383,6 @@ header a {
 
 .modal__form input::placeholder {
 	color: #b4b7c1;
-}
-
-.modal__form input {
-	padding: 14px 10px;
-	border: none;
-	border-radius: 2px;
-	font-size: 15px;
-	font-weight: 300;
-	margin: 5px 0;
-	width: 100%;
-}
-
-.modal__form label {
-	color: #ff6767;
-	font-size: 13px;
-	font-weight: 300;
-	margin-top: 5px;
 }
 
 .modal__form .button {

@@ -17,9 +17,9 @@ class Ajax extends Model {
 			$allowed = array("username", "name", "surname", "email", "pass", "token");
 			$sql = "INSERT INTO `users` SET " . $this->db->pdoSet($allowed, $values, $params);
 			$this->db->query($sql, $values);
-			$sql = "SELECT id FROM `users` WHERE username = ?";
-			$id = $this->db->column($sql, [$params["username"]]);
-//			$this->sendVerification($id, $params["email"], $params["token"]);
+			$sql = "SELECT * FROM `users` WHERE username = ?";
+			$user = $this->db->row($sql, [$params["username"]]);
+			$this->sendVerification($user);
 		}
 		echo json_encode($res);
 	}
@@ -40,16 +40,37 @@ class Ajax extends Model {
 		$res = ["user_exists" => false, "email_exists" => false];
 		$sql = "SELECT * FROM `users` WHERE username = ?";
 		$user = $this->db->row($sql, [$_SESSION["user"]]);
-		$res["wrong_oldpass"] = ($user["pass"] == hash("whirlpool", $params["oldpass"]));
+		$params["status"] = $user["status"];
+
+		if (empty($params["pass"]))
+			$params["pass"] = $params["oldpass"];
+		$res["wrong_oldpass"] = ($user["pass"] != hash("whirlpool", $params["oldpass"]));
 		$res["email_confirmed"] = ($user["status"] == "confirmed");
 		if ($params["newuser"] != $user["username"])
 			$res["user_exists"] = $this->usernameExists($params["newuser"]);
-		if ($params["newemail"] != $user["email"])
+		if ($params["newemail"] != $user["email"]) {
 			$res["email_exists"] = $this->emailExists($params["newemail"]);
+			$params["status"] = "unconfirmed";
+		}
+
 		if (!$res["wrong_oldpass"] && $res["email_confirmed"] &&
-			!$res["user_exists"] && !$res["email_exists"]) {
-			$sql = "UPDATE `users` SET username = ?, name = ?, surname = ?, email = ?, pass = ? WHERE id = ?";
-			$this->db->query($sql, $params);
+			!$res["user_exists"] && !$res["email_exists"])
+		{
+			$sql = "UPDATE `users` SET username=:user, name=:name, surname=:surname, email=:email, pass=:pass, status=:status, token=:token WHERE id=:id";
+			$values = [
+				"user" => $params["newuser"],
+				"name" => $params["newname"],
+				"surname" => $params["newsurname"],
+				"email" => $params["newemail"],
+				"pass" => hash("whirlpool", $params["pass"]),
+				"status" => $params["status"],
+				"id" => $user["id"]
+			];
+			$values["token"] = $user["token"];
+			$this->db->query($sql, $values);
+			$_SESSION["user"] = $params["newuser"];
+			if ($values["status"] == "unconfirmed")
+				$this->sendVerification($values);
 		}
 		echo json_encode($res);
 	}
@@ -70,15 +91,25 @@ class Ajax extends Model {
 		}
 	}
 
-	private function sendVerification($id, $email, $token) {
-		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
-			. "://" . $_SERVER["HTTP_HOST"] . "?action=verificate&id=$id&token=$token";
+	public function addPhoto($params) {
+		$params["img"] = $_FILES["img"];
+		$params["owner"] = $_SESSION["user"];
+		debug($params);
+		$sql = "INSERT INTO `posts` SET owner=:owner, title=:title, description=:description, img=:img";
+		$this->db->query($sql, $params);
+		header("Location: /" . BASE_DIR);
+	}
+
+	private function sendVerification($user) {
+		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://"
+			. $_SERVER["HTTP_HOST"] . "?action=verificate&id=" . $user["id"] . "&token=" . $user["token"];
 		$subject = "Confirm your E-mail address";
-		$message = "You should confirm your e-mail address to access some features<br>
-					To confirm go via this link:<br>
-					<a href=$link>$link</a>";
+		$message = "Hello, " . $user["username"] . "! <br>
+					Thank's for signing up to Camagru!<br>
+					To get started, click the link below to confirm your account.<br>
+					<a href=$link>Confirm your account</a>";
 		$headers = "Content-Type: text/html; charset=ISO-8859-1\n";
-		mail($email, $subject, $message, $headers);
+		mail($user["email"], $subject, $message, $headers);
 	}
 
 	private function generateToken($length = 10) {

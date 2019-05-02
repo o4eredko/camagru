@@ -15,6 +15,10 @@ return [
 		"controller" => "main",
 		"action" => "logout"
 	],
+	"add_photo" => [
+		"controller" => "main",
+		"action" => "add_photo"
+	],
 	"ajax" => [
 		"controller" => "ajax",
 		"action" => "request"
