@@ -6,6 +6,9 @@ body, ul, li, p, h1, h2, h3 {
 body {
 	font-family: 'HelveticaNeueCyr';
 	margin-top: 75px;
+	min-height: calc(100vh - 75px);
+	padding-bottom: 75px;
+	position: relative;
 }
 
 ul, li {
@@ -31,6 +34,11 @@ label {
 	font-size: 13px;
 	font-weight: 300;
 	margin-top: 5px;
+}
+
+hr {
+	border: 1px solid #edeff2;
+	margin: 15px 0;
 }
 
 a, button, label {
@@ -68,6 +76,10 @@ h1 {
 
 .d-block {
 	display: block;
+}
+
+.text-right {
+	text-align: right;
 }
 
 /*-----------------Header-----------------*/
@@ -203,11 +215,6 @@ header a {
 	padding: 0 15px 30px;
 }
 
-.post__content hr {
-	border: 1px solid #edeff2;
-	margin: 15px 0;
-}
-
 .post__title {
 	font-weight: bold;
 	font-size: 13px;
@@ -322,6 +329,19 @@ header a {
 	color: #fff;
 }
 
+/*-----------------Footer-----------------*/
+footer {
+	background-color: #222835;
+	color: #fff;
+	font-size: 14px;
+	line-height: 75px;
+	margin-top: 40px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
 /*-----------------Modal-----------------*/
 .modal {
 	position: fixed;
@@ -331,7 +351,7 @@ header a {
 	height: 100%;
 	z-index: 10;
 	background-color: rgba(255, 255, 255, 0.3);
-	transition: .15s ease-out all;
+	transition: .3s ease all;
 }
 
 .modal.active {
@@ -391,6 +411,10 @@ header a {
 	padding: 15px 45px;
 }
 
+#loginForm .button {
+	margin-top: 15px;
+}
+
 .loading {
 	display: none;
 	width: 60px;
@@ -403,4 +427,17 @@ header a {
 	font-size: 14px;
 	color: #1aaa55;
 	font-weight: 300;
+}
+
+.forgot-pass__link {
+	color: #727785;
+	display: block;
+	text-decoration: none;
+	margin-top: 30px;
+	font-size: 15px;
+	font-weight: 300;
+}
+
+.forgot-pass__link:hover {
+	color: #fff;
 }

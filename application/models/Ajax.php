@@ -14,12 +14,12 @@ class Ajax extends Model {
 		if (!$res["user_exists"] && !$res["email_exists"]) {
 			$params["token"] = $this->generateToken(10);
 			$params["pass"] = hash("whirlpool", $params["pass"]);
-			$allowed = array("username", "name", "surname", "email", "pass", "token");
+			$allowed = array("username", "email", "pass", "token");
 			$sql = "INSERT INTO `users` SET " . $this->db->pdoSet($allowed, $values, $params);
 			$this->db->query($sql, $values);
 			$sql = "SELECT * FROM `users` WHERE username = ?";
 			$user = $this->db->row($sql, [$params["username"]]);
-			$this->sendVerification($user);
+			$this->sendMail($user, "verify");
 		}
 		echo json_encode($res);
 	}
@@ -56,11 +56,9 @@ class Ajax extends Model {
 		if (!$res["wrong_oldpass"] && $res["email_confirmed"] &&
 			!$res["user_exists"] && !$res["email_exists"])
 		{
-			$sql = "UPDATE `users` SET username=:user, name=:name, surname=:surname, email=:email, pass=:pass, status=:status, token=:token WHERE id=:id";
+			$sql = "UPDATE `users` SET username=:user, email=:email, pass=:pass, status=:status, token=:token WHERE id=:id";
 			$values = [
 				"user" => $params["newuser"],
-				"name" => $params["newname"],
-				"surname" => $params["newsurname"],
 				"email" => $params["newemail"],
 				"pass" => hash("whirlpool", $params["pass"]),
 				"status" => $params["status"],
@@ -70,7 +68,32 @@ class Ajax extends Model {
 			$this->db->query($sql, $values);
 			$_SESSION["user"] = $params["newuser"];
 			if ($values["status"] == "unconfirmed")
-				$this->sendVerification($values);
+				$this->sendMail($values, "verify");
+		}
+		echo json_encode($res);
+	}
+
+	public function forget($params) {
+		$res = [
+			"wrong_email" => false,
+			"email_confirmed" => true
+		];
+		if (!empty($params["email"])) {
+			$sql = "SELECT * FROM `users` WHERE email=:email";
+			$user = $this->db->row($sql, $params);
+			$res["wrong_email"] = !$user;
+			$res["email_confirmed"] = ($user && $user["status"] == "confirmed");
+
+			if (!$res["wrong_email"] && $res["email_confirmed"]) {
+				$this->sendMail($user, "change password");
+			}
+
+		} else if (!empty($params["pass"]) && !empty($params["id"])) {
+			$sql = "UPDATE `users` SET pass=:pass WHERE id=:id";
+			$this->db->query($sql, [
+				"pass" => hash("whirlpool", $params["pass"]),
+				"id" => $params["id"],
+			]);
 		}
 		echo json_encode($res);
 	}
@@ -92,22 +115,32 @@ class Ajax extends Model {
 	}
 
 	public function addPhoto($params) {
-		$params["img"] = $_FILES["img"];
+		$img = $_FILES["img"]["tmp_name"];
+		move_uploaded_file($img, "img/" . $_FILES["img"]["name"]);
+		$params["img"] = "img/" . $_FILES["img"]["name"];
 		$params["owner"] = $_SESSION["user"];
-		debug($params);
 		$sql = "INSERT INTO `posts` SET owner=:owner, title=:title, description=:description, img=:img";
 		$this->db->query($sql, $params);
 		header("Location: /" . BASE_DIR);
 	}
 
-	private function sendVerification($user) {
-		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://"
-			. $_SERVER["HTTP_HOST"] . "?action=verificate&id=" . $user["id"] . "&token=" . $user["token"];
-		$subject = "Confirm your E-mail address";
-		$message = "Hello, " . $user["username"] . "! <br>
+	private function sendMail($user, $opt) {
+		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER["HTTP_HOST"];
+		if ($opt == "verify") {
+			$link .= "?action=verificate&id=" . $user["id"] . "&token=" . $user["token"];
+			$subject = "Confirm your E-mail address";
+			$message = "Hello, " . $user["username"] . "! <br>
 					Thank's for signing up to Camagru!<br>
 					To get started, click the link below to confirm your account.<br>
 					<a href=$link>Confirm your account</a>";
+		} else if ($opt == "change password") {
+			$link .= "?action=forgot&id=" . $user["id"] . "&token=" . $user["token"];
+			$subject = "Change your password";
+			$message = "Hello, " . $user["username"] . "! <br>
+						It seems you have forgotten your password.<br>
+						To create new password, go to this link: <br>
+						<a href=$link>Change your password</a>";
+		}
 		$headers = "Content-Type: text/html; charset=ISO-8859-1\n";
 		mail($user["email"], $subject, $message, $headers);
 	}

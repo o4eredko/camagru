@@ -41,11 +41,14 @@
             </div>
         </div>
     </header>
-	<?= $content; ?>
+	<?= $content ?>
     <script src="js/main.js" defer></script>
     <footer>
         <div class="container">
-
+            <div class="row align-items-center">
+                <div class="col-6">© 2019. All rights reserved.</div>
+                <div class="col-6 text-right">Created by <b> yochered</b></div>
+            </div>
         </div>
     </footer>
     <div class="modal" id="registration">
@@ -58,12 +61,6 @@
                         <div class="col-6">
                             <input type="text" name="username" placeholder="Login" required>
                             <label hidden for="username">User with this username already exists</label>
-                        </div>
-                        <div class="col-6">
-                            <input type="text" name="name" placeholder="First Name" required>
-                        </div>
-                        <div class="col-6">
-                            <input type="text" name="surname" placeholder="Last Name" required>
                         </div>
                         <div class="col-6">
                             <input type="email" name="email" placeholder="Email" required>
@@ -105,6 +102,37 @@
                     </div>
                     <img class="loading" src="img/loading.gif" alt="Camagru Loading">
                     <p class="form__confirmation" hidden>You have to confirm your e-mail first</p>
+                    <a href="#" class="forgot-pass__link" data-toggle-id="forgot">Forgot your password?</a>
+                    <button class="button">Log in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="forgot">
+        <div class="modal__content">
+            <div class="container">
+                <form class="modal__form" id="forgotForm">
+                    <a href="#" class="close" data-toggle-id="forgot"><i class="fas fa-times"></i></a>
+                    <h3>Forgot your password?</h3>
+                    <div class="row modal__form_row">
+                        <?php if ($passChangeAllowed): ?>
+                        <div class="col-6">
+                            <input type="password" name="pass" placeholder="New Password" required>
+                            <label hidden for="pass">Password must be at least of length: 6</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="password" name="repass" placeholder="Repeat New Password" required>
+                            <label hidden for="repass">Password and Repassword must be identical</label>
+                        </div>
+                        <?php else: ?>
+                        <div class="col-6">
+                            <input type="email" name="email" placeholder="Email" required>
+                            <label hidden for="username">Wrong email</label>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <img class="loading" src="img/loading.gif" alt="Camagru Loading">
+                    <p class="form__confirmation" hidden>You have to confirm your e-mail first</p>
                     <button class="button">Log in</button>
                 </form>
             </div>
@@ -121,12 +149,6 @@
                         <div class="col-6">
                             <input type="text" value="<?= $username ?>" name="newuser" placeholder="Login" required>
                             <label hidden for="newuser">User with this username already exists</label>
-                        </div>
-                        <div class="col-6">
-                            <input type="text" value="<?= $name ?>" name="newname" placeholder="First Name" required>
-                        </div>
-                        <div class="col-6">
-                            <input type="text" value="<?= $surname ?>" name="newsurname" placeholder="Last Name" required>
                         </div>
                         <div class="col-6">
                             <input type="email" value="<?= $email ?>" name="newemail" placeholder="Email" required>

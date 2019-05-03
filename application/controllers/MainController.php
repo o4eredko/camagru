@@ -9,6 +9,8 @@ class MainController extends Controller {
     public function indexAction() {
         $data = $this->model->getUserData();
         $data["posts"] = $this->model->getPosts();
+        $data["passChangeAllowed"] = ($this->model->checkToken($_GET) &&
+									isset($_GET["action"]) && $_GET["action"] == "forgot");
         $this->view->render($data);
     }
 
