@@ -11,9 +11,9 @@
 </section>
 <section id="main">
     <div class="container">
-        <div class="row posts">
+        <div class="posts slider">
             <?php foreach ($posts as $post): ?>
-            <div class="col-3">
+            <div class="col-md-3 col-12">
                 <div class="post">
                     <img src="<?= $post["img"] ?>" alt="" class="post__img">
                     <div class="post__content">

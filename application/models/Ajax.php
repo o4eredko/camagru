@@ -115,6 +115,7 @@ class Ajax extends Model {
 	}
 
 	public function addPhoto($params) {
+		echo "FSD";
 		$img = $_FILES["img"]["tmp_name"];
 		move_uploaded_file($img, "img/" . $_FILES["img"]["name"]);
 		$params["img"] = "img/" . $_FILES["img"]["name"];

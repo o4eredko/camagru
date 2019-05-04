@@ -223,22 +223,115 @@ if (elem && $_GET["action"] === "forgot" && "id" in $_GET && "token" in $_GET) {
 }
 
 /*-----------------Pagination-----------------*/
-function pagination(container, settings) {
-	if (!container) return;
-	settings.maxPages = Math.ceil(container.children.length / settings.maxElems);
-	console.log(settings.maxPages);
-	let pages = document.createElement("div");
-	pages.classList.add("slider");
-	container.appendChild(pages);
-	for (let i = 0; i < settings.maxPages; i++) {
-		let page = document.createElement("span");
-		page.classList.add("slider__link");
-		page.textContent = i + 1;
-		pages.appendChild(page);
+
+function pagination(slider, settings) {
+	if (!slider) return;
+	settings.maxPages = Math.ceil(slider.children.length / settings.maxElems);
+	let i = 0;
+	let len = slider.children.length;
+	while (i < len) {
+		let container = document.createElement("div");
+		container.classList.add("slide");
+		let j = -1;
+		while (++j < settings.maxElems && i++ < len)
+			container.appendChild(slider.children[0]);
+		slider.appendChild(container);
 	}
+	slider.children[0].classList.add("active");
+	for (i = 0; i < slider.children.length; i++)
+		slider.children[i].setAttribute("data-slide-id", i);
+
+	let links = document.createElement("div");
+	links.classList.add("slider-links");
+	for (i = 0; i < settings.maxPages; i++) {
+		let link = document.createElement("span");
+		link.classList.add("slider-links__item");
+		link.setAttribute("data-link-id", i);
+		link.onclick = function(e) {
+			let id = e.target.getAttribute("data-link-id");
+			let slideToShow = document.querySelector(".slider .slide[data-slide-id='" + id + "']");
+			let currentSlide = document.querySelector(".slider .slide.active");
+			currentSlide.classList.remove("active");
+			slideToShow.classList.add("active");
+		};
+		links.appendChild(link);
+	}
+	slider.appendChild(links);
 }
 
 let paginationSettings = {
-	maxElems: 4,
+	maxElems: 8
 };
-pagination(document.querySelector(".posts"), paginationSettings);
+pagination(document.querySelector(".slider"), paginationSettings);
+
+
+/*Drag And Drop*/
+
+let	isAdvancedUpload = function() {
+	let div = document.createElement('div');
+	return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+}();
+
+let add_photo = new FormData();
+if (isAdvancedUpload) {
+	let dropArea = document.querySelector(".add_photo__form .add_photo__area");
+
+	function preventDefaults (e) {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, preventDefaults, false)
+	});
+
+	function highlight() {
+		dropArea.classList.add("highlight");
+	}
+	['dragenter', 'dragover'].forEach(eventName => {
+		dropArea.addEventListener(eventName, highlight, false)
+	});
+
+	function unhighlight() {
+		dropArea.classList.remove("highlight");
+	}
+	['dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, unhighlight, false)
+	});
+
+	function handleDrop(e) {
+		let dt = e.dataTransfer;
+		let file = dt.files[0];
+
+		uploadFile(file);
+	}
+	dropArea.addEventListener('drop', handleDrop, false);
+
+	function uploadFile(file) {
+		add_photo.append("img", file);
+		console.log(add_photo.get("img"));
+
+	}
+}
+
+function sendAddPhotoForm(e) {
+	e.preventDefault();
+	let data = new FormData(e.target);
+	data.append("action", "addPhoto");
+	data.set("img", add_photo.get("img"));
+	let xhr = new XMLHttpRequest();
+
+	xhr.open('POST', 'ajax', true);
+	xhr.send(data);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState !== 4) {
+		} else {
+			if (xhr.status === 200) {
+				console.log(xhr.responseText);
+			}
+		}
+	}
+}
+
+elem = document.querySelector(".add_photo__form");
+if (elem) elem.onsubmit = sendAddPhotoForm;
+
