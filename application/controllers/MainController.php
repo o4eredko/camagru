@@ -10,7 +10,8 @@ class MainController extends Controller {
         $data = $this->model->getUserData();
         $data["posts"] = $this->model->getPosts();
         $data["passChangeAllowed"] = ($this->model->checkToken($_GET) &&
-									isset($_GET["action"]) && $_GET["action"] == "forgot");
+			isset($_GET["action"]) && $_GET["action"] == "forgot");
+        $data["likedPosts"] = $this->model->getLikedPosts();
         $this->view->render($data);
     }
 

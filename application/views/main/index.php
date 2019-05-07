@@ -24,7 +24,12 @@
                         </p>
                     </div>
                     <div class="post__stat">
-
+                        <?php if (in_array($post["id"], $likedPosts)): ?>
+                            <span class="post__like"><i class="fa fa-thumbs-up like active" data-post-id="<?= $post["id"] ?>"></i></span>
+						<?php else: ?>
+                            <span class="post__like"><i class="fa fa-thumbs-up like" data-post-id="<?= $post["id"] ?>"></i></span>
+						<?php endif; ?>
+                        <span class="post__like"><i class="fas fa-comment comment"></i> 0</span>
                     </div>
                 </div>
             </div>

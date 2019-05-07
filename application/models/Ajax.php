@@ -115,7 +115,6 @@ class Ajax extends Model {
 	}
 
 	public function addPhoto($params) {
-		echo "FSD";
 		$img = $_FILES["img"]["tmp_name"];
 		move_uploaded_file($img, "img/" . $_FILES["img"]["name"]);
 		$params["img"] = "img/" . $_FILES["img"]["name"];
@@ -144,6 +143,20 @@ class Ajax extends Model {
 		}
 		$headers = "Content-Type: text/html; charset=ISO-8859-1\n";
 		mail($user["email"], $subject, $message, $headers);
+	}
+
+	public function like($params) {
+		if (!isset($params["post_id"]) || !isset($_SESSION["user"]) || !isset($params["liked"])) {
+			echo "Error";
+			return ;
+		}
+		if ($params["liked"] == "true") {
+			$sql = "DELETE FROM `likes` WHERE owner=? && post_id=?";
+			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
+		} else {
+			$sql = "INSERT INTO `likes` SET owner=?, post_id=?";
+			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
+		}
 	}
 
 	private function generateToken($length = 10) {

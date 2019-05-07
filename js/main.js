@@ -103,7 +103,7 @@ function sendChangeForm(e) {
 	let labels = getLabels(e.target);
 	let confirmation = document.querySelector("#changeForm .form__confirmation");
 	if (!validatePass(e.target, labels)) return;
-	let form = new FormData(e.target, labels);
+	let form = new FormData(e.target);
 	form.append("action", "change");
 	let xhr = new XMLHttpRequest();
 
@@ -251,11 +251,15 @@ function pagination(slider, settings) {
 			let id = e.target.getAttribute("data-link-id");
 			let slideToShow = document.querySelector(".slider .slide[data-slide-id='" + id + "']");
 			let currentSlide = document.querySelector(".slider .slide.active");
+			let currentLink = document.querySelector(".slider .slider-links__item.active");
 			currentSlide.classList.remove("active");
+			currentLink.classList.remove("active");
 			slideToShow.classList.add("active");
+			e.target.classList.add("active");
 		};
 		links.appendChild(link);
 	}
+	links.children[0].classList.add("active");
 	slider.appendChild(links);
 }
 
@@ -265,55 +269,50 @@ let paginationSettings = {
 pagination(document.querySelector(".slider"), paginationSettings);
 
 
-/*Drag And Drop*/
+/*-----------------Drag And Drop-----------------*/
 
-let	isAdvancedUpload = function() {
+let	isDragAllowed = function() {
 	let div = document.createElement('div');
 	return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
 }();
 
 let add_photo = new FormData();
-if (isAdvancedUpload) {
-	let dropArea = document.querySelector(".add_photo__form .add_photo__area");
-
-	function preventDefaults (e) {
-		e.preventDefault();
-		e.stopPropagation();
-	}
-	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, preventDefaults, false)
-	});
-
-	function highlight() {
+let dropArea = document.querySelector(".add_photo__form .add_photo__area");
+if (isDragAllowed && dropArea) {
+	function dragOver() {
 		dropArea.classList.add("highlight");
 	}
-	['dragenter', 'dragover'].forEach(eventName => {
-		dropArea.addEventListener(eventName, highlight, false)
-	});
-
-	function unhighlight() {
+	function dragLeave() {
 		dropArea.classList.remove("highlight");
 	}
-	['dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, unhighlight, false)
-	});
-
 	function handleDrop(e) {
 		let dt = e.dataTransfer;
 		let file = dt.files[0];
 
-		uploadFile(file);
+		addPhoto(file);
 	}
-	dropArea.addEventListener('drop', handleDrop, false);
-
-	function uploadFile(file) {
+	function addPhoto(file) {
 		add_photo.append("img", file);
-		console.log(add_photo.get("img"));
-
+		dropArea.classList.add("selected");
 	}
+
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+		}, false)
+	});
+	['dragenter', 'dragover'].forEach(eventName => {
+		dropArea.addEventListener(eventName, dragOver, false)
+	});
+	['dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, dragLeave, false)
+	});
+	dropArea.addEventListener('drop', handleDrop, false);
 }
 
-function sendAddPhotoForm(e) {
+elem = document.querySelector(".add_photo__form");
+if (elem) elem.onsubmit = (e) => {
 	e.preventDefault();
 	let data = new FormData(e.target);
 	data.append("action", "addPhoto");
@@ -330,8 +329,49 @@ function sendAddPhotoForm(e) {
 			}
 		}
 	}
+};
+
+/*-----------------Camera-----------------*/
+
+const camSupported = "mediaDevices" in navigator;
+const cam = document.getElementById("cam");
+if (camSupported && cam) {
+	const snapshot = document.getElementById("snapshot");
+	const context = snapshot.getContext("2d");
+	const snapButton = document.getElementById("snap-button");
+	const constraints = {
+		video: true
+	};
+	snapButton.addEventListener("click", () => {
+		const styles = getComputedStyle(cam);
+		snapshot.height = parseInt(styles.height);
+		snapshot.width = parseInt(styles.width);
+		snapshot.hidden = false;
+		cam.hidden = true;
+		context.drawImage(cam, 0, 0, snapshot.width, snapshot.height);
+		cam.srcObject.getVideoTracks().forEach(track => track.stop());
+	});
+
+	navigator.mediaDevices.getUserMedia(constraints)
+	.then((stream) => {
+		cam.srcObject = stream;
+	});
 }
 
-elem = document.querySelector(".add_photo__form");
-if (elem) elem.onsubmit = sendAddPhotoForm;
+/*-----------------Likes and comments-----------------*/
+function likePost(e) {
+	let liked = e.target.classList.contains("active");
+	let xhr = new XMLHttpRequest();
+	let params = "?action=like&post_id=" + e.target.getAttribute("data-post-id") + "&liked=" + liked;
 
+	xhr.open("GET", "ajax" + params, true);
+	xhr.setRequestHeader("Content-type", "application/json");
+	xhr.send();
+	xhr.onreadystatechange = function() {
+		e.target.classList.toggle("active");
+	}
+}
+let likes = document.querySelectorAll(".like");
+for (let i = likes.length - 1; i >= 0; i--) {
+	likes[i].onclick = likePost;
+}

@@ -67,6 +67,10 @@ a, button, label {
 	background: transparent;
 }
 
+.button-transparent:hover {
+	color: #0d58c8;
+}
+
 h1 {
 	text-align: center;
 	font-size: 40px;
@@ -239,6 +243,24 @@ header a {
 .post__stat {
 	height: 60px;
 	background-color: #f6f6f6;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 20px 15px;
+	font-size: 11px;
+	color: #b4b7c1;
+}
+
+.post__stat span {
+	cursor: pointer;
+}
+
+.post__stat i {
+	margin-right: 5px;
+}
+
+.post__stat i.like.active {
+	color: #0d58c8;
 }
 
 .slider {
@@ -261,6 +283,7 @@ header a {
 .slide.active {
 	position: relative;
 	opacity: 1;
+	z-index: 2;
 }
 
 .slider-links {
@@ -269,7 +292,7 @@ header a {
 }
 
 .slider-links__item {
-	background-color: #0d58c8;
+	background-color: transparent;
 	border: 1px solid #0d58c8;
 	border-radius: 100%;
 	margin: 0 10px;
@@ -279,8 +302,8 @@ header a {
 	transition: .15s ease-in all;
 }
 
-.slider-links__item:hover {
-	background-color: transparent;
+.slider-links__item.active, .slider-links__item:hover {
+	background-color: #0d58c8;
 }
 
 /*-----------------Add Photo-----------------*/
@@ -310,16 +333,31 @@ header a {
 	height: 350px;
 	background-color: #f6f6f6;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	transition: .3s ease-in all;
+}
+
+.add_photo__area.selected {
+	background-color: rgb(232, 240, 254);
+}
+
+.add_photo__area.highlight {
+	background-color: #0d58c8;
+}
+
+.add_photo__area label {
+	margin-top: 20px;
 }
 
 .add_photo__area:hover {
 	border: 1px solid #000;
 }
 
-.add_photo__form i {
+.add_photo__area i {
 	font-size: 3vw;
+	color: #ff6767;
 }
 
 .add_photo__file {
@@ -371,9 +409,9 @@ header a {
 	color: #fff;
 }
 
-
-.add_photo__area.highlight {
-	background-color: purple;
+#cam {
+	width: 100%;
+	outline: none;
 }
 
 /*-----------------Footer-----------------*/
