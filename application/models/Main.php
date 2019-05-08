@@ -24,7 +24,12 @@ class Main extends Model {
 
 	public function getPosts() {
 		$response = $this->pdo->query("SELECT * FROM `posts`");
-		return $response->fetchAll(PDO::FETCH_ASSOC);
+		$posts = $response->fetchAll(PDO::FETCH_ASSOC);
+		for ($i = 0; $i < count($posts); $i++) {
+			$posts[$i]["likes"] = $this->getLikesNum($posts[$i]["id"]);
+			$posts[$i]["comments"] = $this->getCommentsNum($posts[$i]["id"]);
+		}
+		return $posts;
 	}
 
 	public function checkToken($params) {
@@ -42,6 +47,27 @@ class Main extends Model {
 		$response = $this->db->query($sql, [$_SESSION["user"]]);
 		$res = $response->fetchAll(PDO::FETCH_COLUMN);
 		return $res;
+	}
+
+	private function getLikesNum($post_id) {
+		$sql = "SELECT * FROM `likes` WHERE post_id=:post_id";
+		$response = $this->db->query($sql, ["post_id" => $post_id]);
+		return $response->rowCount();
+	}
+
+	private function getCommentsNum($post_id) {
+		$sql = "SELECT * FROM `comments` WHERE post_id=:post_id";
+		$response = $this->db->query($sql, ["post_id" => $post_id]);
+		return $response->rowCount();
+	}
+
+	public function getPost($post_id) {
+		$sql = "SELECT * FROM `posts` WHERE id=:post_id";
+		$response = $this->db->query($sql, ["post_id" => $post_id]);
+		$post = $response->fetch(PDO::FETCH_ASSOC);
+		$post["likes"] = $this->getLikesNum($post["id"]);
+		$post["comments"] = $this->getCommentsNum($post["id"]);
+		return $post;
 	}
 
 }

@@ -343,11 +343,8 @@ if (camSupported && cam) {
 		video: true
 	};
 	snapButton.addEventListener("click", () => {
-		const styles = getComputedStyle(cam);
-		snapshot.height = parseInt(styles.height);
-		snapshot.width = parseInt(styles.width);
-		snapshot.hidden = false;
-		cam.hidden = true;
+		// snapshot.hidden = false;
+		// cam.hidden = true;
 		context.drawImage(cam, 0, 0, snapshot.width, snapshot.height);
 		cam.srcObject.getVideoTracks().forEach(track => track.stop());
 	});
@@ -355,6 +352,20 @@ if (camSupported && cam) {
 	navigator.mediaDevices.getUserMedia(constraints)
 	.then((stream) => {
 		cam.srcObject = stream;
+		cam.addEventListener("playing", () => {
+			const styles = getComputedStyle(cam);
+			snapshot.height = parseInt(styles.height);
+			snapshot.width = parseInt(styles.width);
+			let img = new Image();
+			img.src = "img/leopard_sunglasses.png";
+			console.log(img);
+			function step() {
+				context.drawImage(cam, 0, 0);
+				context.drawImage(img, snapshot.width / 2 - img.width / 8, snapshot.height / 2 - img.height / 8, img.width / 4, img.height / 4);
+				requestAnimationFrame(step);
+			}
+			requestAnimationFrame(step);
+		});
 	});
 }
 
@@ -368,10 +379,75 @@ function likePost(e) {
 	xhr.setRequestHeader("Content-type", "application/json");
 	xhr.send();
 	xhr.onreadystatechange = function() {
-		e.target.classList.toggle("active");
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			e.target.classList.toggle("active");
+			let likesNum = parseInt(e.target.nextSibling.textContent);
+			likesNum += (liked) ? -1 : 1;
+			e.target.nextSibling.textContent = likesNum;
+		}
 	}
 }
 let likes = document.querySelectorAll(".like");
 for (let i = likes.length - 1; i >= 0; i--) {
 	likes[i].onclick = likePost;
+}
+
+let commentsContainer = document.querySelector(".post-comment__list");
+function showComments(container) {
+	if (!container) return ;
+	let xhr = new XMLHttpRequest();
+
+	xhr.open("GET", "ajax?action=showComments&post_id=" + $_GET["id"], true);
+	xhr.send();
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			container.innerHTML = xhr.responseText;
+			elem = document.querySelectorAll(".post-comment__del");
+			for (let i = elem.length - 1; i >= 0; i--)
+				elem[i].onclick = delComment;
+		}
+	}
+}
+showComments(commentsContainer);
+
+function commentPost(e) {
+	e.preventDefault();
+	let form = new FormData(e.target);
+	let xhr = new XMLHttpRequest();
+	form.append("action", "comment");
+	form.append("post_id", $_GET["id"]);
+
+	xhr.open("POST", "ajax", true);
+	xhr.send(form);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			e.target.reset();
+			showComments(commentsContainer);
+			elem = document.querySelector(".post__stat .post__comment");
+			if (!elem) return ;
+			let commentsNum = parseInt(elem.childNodes[1].textContent);
+			commentsNum++;
+			elem.childNodes[1].textContent = commentsNum;
+		}
+	}
+}
+elem = document.querySelector(".post-comment__form");
+if (elem) elem.onsubmit = commentPost;
+
+function delComment(e) {
+	let xhr = new XMLHttpRequest();
+	xhr.open("GET", "ajax?action=delComment&id=" +
+		e.target.getAttribute("data-comment-id"), true);
+	xhr.send();
+
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			showComments(commentsContainer);
+			elem = document.querySelector(".post__stat .post__comment");
+			if (!elem) return ;
+			let commentsNum = parseInt(elem.childNodes[1].textContent);
+			commentsNum--;
+			elem.childNodes[1].textContent = commentsNum;
+		}
+	}
 }

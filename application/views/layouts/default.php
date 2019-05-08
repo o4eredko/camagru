@@ -16,7 +16,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-3">
-                    <a href="index.php" class="logo">Camagru</a>
+                    <a href="/" class="logo">Camagru</a>
                 </div>
                 <div class="col-6">
                     <nav class="main-menu">

@@ -27,4 +27,12 @@ class MainController extends Controller {
 		$this->view->render($data);
 	}
 
+	public function postAction() {
+		if (!isset($_GET["id"]))
+			header("Location: /");
+		$data["post"] = $this->model->getPost($_GET["id"]);
+		$data["likedPosts"] = $this->model->getLikedPosts();
+		$this->view->render($data);
+	}
+
 }

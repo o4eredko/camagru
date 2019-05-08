@@ -61,6 +61,7 @@ a, button, label {
 	border: 1px solid #0d58c8;
 	letter-spacing: 1px;
 	cursor: pointer;
+	outline: none;
 }
 
 .button:hover {
@@ -69,6 +70,11 @@ a, button, label {
 
 .button-transparent:hover {
 	color: #0d58c8;
+}
+
+.img-round {
+	max-width: 50px;
+	border-radius: 100%;
 }
 
 h1 {
@@ -241,18 +247,23 @@ header a {
 }
 
 .post__stat {
-	height: 60px;
+	height: 40px;
 	background-color: #f6f6f6;
 	display: flex;
 	align-items: center;
 	justify-content: space-around;
 	padding: 20px 15px;
-	font-size: 11px;
+	font-size: 13px;
 	color: #b4b7c1;
 }
 
 .post__stat span {
 	cursor: pointer;
+}
+
+.post__stat a {
+	text-decoration: none;
+	color: #b4b7c1;
 }
 
 .post__stat i {
@@ -337,6 +348,8 @@ header a {
 	align-items: center;
 	justify-content: center;
 	transition: .3s ease-in all;
+	border-radius: 2px;
+	border: 1px solid transparent;
 }
 
 .add_photo__area.selected {
@@ -352,7 +365,7 @@ header a {
 }
 
 .add_photo__area:hover {
-	border: 1px solid #000;
+	border-color: #0d58c8;
 }
 
 .add_photo__area i {
@@ -525,4 +538,99 @@ footer {
 
 .forgot-pass__link:hover {
 	color: #fff;
+}
+
+/*Post*/
+
+.info__block {
+	border: 1px solid #b4b7c1;
+}
+
+#post {
+	padding: 50px 0;
+}
+
+.post-page__title {
+	background-color: #f6f6f6;
+	font-size: 16px;
+	line-height: 18px;
+	color: #383b43;
+	padding: 25px 30px;
+}
+
+.post-page__content {
+	padding: 30px;
+	font-size: 13px;
+	line-height: 22px;
+	font-weight: 400;
+	color: #a1a5b1;
+}
+
+.post-page__image {
+	margin-top: 30px;
+	width: 100%;
+}
+
+.post-comment {
+	margin-top: 30px;
+}
+
+.post-comment__item {
+	display: flex;
+	align-items: flex-start;
+	padding: 20px 30px;
+	position: relative;
+}
+
+.post-comment__block {
+	margin-left: 20px;
+	width: 100%;
+}
+
+.post-comment__owner {
+	margin: 3px 0 7px;
+	width: 100%;
+}
+
+.post-comment__text {
+	font-size: 13px;
+	line-height: 18px;
+	color: #7a8192;
+	display: block;
+	background: #f6f6f7;
+	border: 1px solid #edeff2;
+	padding: 15px 20px 20px 20px;
+}
+
+.post-comment__form {
+	background-color: #f6f6f7;
+	display: flex;
+	flex-direction: column;
+	padding: 30px 15px;
+}
+
+.post-comment__form textarea {
+	padding: 14px 10px;
+	border: none;
+	border-radius: 2px;
+	font-weight: 300;
+	width: 100%;
+	font-size: 15px;
+	height: 75px;
+	resize: none;
+	outline: none;
+}
+
+.post-comment__del {
+	cursor: pointer;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+	font-size: 15px;
+	color: #b4b7c1;
+	transition: .15s ease-in all;
+}
+
+.post-comment__del:hover {
+	color: #0d58c8;
 }

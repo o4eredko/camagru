@@ -15,7 +15,9 @@
             <?php foreach ($posts as $post): ?>
             <div class="col-md-3 col-12">
                 <div class="post">
-                    <img src="<?= $post["img"] ?>" alt="" class="post__img">
+                    <a href="post?id=<?= $post["id"] ?>">
+                        <img src="<?= $post["img"] ?>" alt="" class="post__img">
+                    </a>
                     <div class="post__content">
                         <h4 class="post__title"><?= $post["title"] ?></h4>
                         <hr>
@@ -25,11 +27,17 @@
                     </div>
                     <div class="post__stat">
                         <?php if (in_array($post["id"], $likedPosts)): ?>
-                            <span class="post__like"><i class="fa fa-thumbs-up like active" data-post-id="<?= $post["id"] ?>"></i></span>
+                            <span class="post__like">
+                                <i class="fa fa-thumbs-up like active" data-post-id="<?= $post["id"] ?>"></i>
+                                <?= $post["likes"] ?>
+                            </span>
 						<?php else: ?>
-                            <span class="post__like"><i class="fa fa-thumbs-up like" data-post-id="<?= $post["id"] ?>"></i></span>
+                            <span class="post__like">
+                                <i class="fa fa-thumbs-up like" data-post-id="<?= $post["id"] ?>"></i>
+                                <?= $post["likes"] ?>
+                            </span>
 						<?php endif; ?>
-                        <span class="post__like"><i class="fas fa-comment comment"></i> 0</span>
+                        <a href="post?id= <?= $post["id"] ?>" class="post__comment"><i class="fas fa-comment comment"></i><?= $post["comments"] ?></a>
                     </div>
                 </div>
             </div>

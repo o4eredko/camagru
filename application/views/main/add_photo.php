@@ -3,7 +3,7 @@
 		<div class="row justify-content-center">
             <div class="col-6">
                 <h3 class="add_photo__title">Grab a snapshot</h3>
-                <canvas id="snapshot" hidden></canvas>
+                <canvas id="snapshot"></canvas>
                 <video id="cam" autoplay></video>
                 <button class="button button-transparent" id="snap-button">Take a photo</button>
             </div>

@@ -3,6 +3,7 @@
 
 namespace application\models;
 use application\core\Model;
+use PDO;
 
 class Ajax extends Model {
 
@@ -151,12 +152,49 @@ class Ajax extends Model {
 			return ;
 		}
 		if ($params["liked"] == "true") {
-			$sql = "DELETE FROM `likes` WHERE owner=? && post_id=?";
+			$sql = "DELETE FROM `likes` WHERE owner=? AND post_id=?";
 			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
 		} else {
 			$sql = "INSERT INTO `likes` SET owner=?, post_id=?";
 			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
 		}
+	}
+
+	public function comment($params) {
+		if (!isset($params["post_id"]) || !isset($_SESSION["user"])) {
+			echo "Error";
+			return ;
+		}
+		$sql = "INSERT INTO `comments` SET owner=:owner, post_id=:post_id, text=:text";
+		$values = [
+			"owner" => $_SESSION["user"],
+			"post_id" => $params["post_id"],
+			"text" => $params["comment"]
+		];
+		$this->db->query($sql, $values);
+	}
+
+	public function delComment($params) {
+		if (!isset($params["id"]))
+			exit("Error");
+		$sql = "DELETE FROM `comments` WHERE id=?";
+		$this->db->query($sql, [$params["id"]]);
+	}
+
+	public function showComments($params) {
+		$comments = $this->getComments($params["post_id"]);
+		foreach ($comments as $comment): ?>
+		<div class="post-comment__item">
+			<img class="img-round" src="img/profile.png" alt="Camagru image">
+			<div class="d-flex flex-column post-comment__block">
+				<h4 class="post-comment__owner"><?= $comment["owner"] ?></h4>
+				<p class="post-comment__text"><?= $comment["text"] ?></p>
+				<?php if ($comment["owner"] == $_SESSION["user"]): ?>
+					<i class="fas fa-trash-alt post-comment__del" data-comment-id="<?= $comment["id"] ?>"></i>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php endforeach;
 	}
 
 	private function generateToken($length = 10) {
@@ -201,6 +239,14 @@ class Ajax extends Model {
 		}
 		if (!$res) return false;
 		return ($res["status"] == "confirmed");
+	}
+
+	private function getComments($post_id) {
+		$sql = "SELECT * FROM `comments` WHERE post_id=:post_id";
+		$response = $this->db->query($sql, ["post_id" => $post_id]);
+		if (!($res = $response->fetchAll(PDO::FETCH_ASSOC)))
+			return [];
+		return $res;
 	}
 
 }
