@@ -427,6 +427,30 @@ header a {
 	outline: none;
 }
 
+.dragImg__container {
+	display: flex;
+	align-items: center;
+	height: 150px;
+	margin-bottom: 10px;
+}
+
+.snapshot__area {
+	position: relative;
+}
+
+.imgToDrag {
+	max-width: 140px;
+	cursor: pointer;
+}
+
+.dragImg {
+	max-width: 140px;
+	cursor: pointer;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
 /*-----------------Footer-----------------*/
 footer {
 	background-color: #222835;

@@ -197,6 +197,36 @@ class Ajax extends Model {
 		<?php endforeach;
 	}
 
+	public function snapshot($params) {
+	    if (!isset($params["img"]))
+	        exit("No image");
+		$img = $params["img"];
+		$img = str_replace('data:image/png;base64,', '', $img);
+		$img = str_replace(' ', '+', $img);
+		$fileName = "img/snapshot_tmp.png";
+		$fileData = base64_decode($img);
+		file_put_contents($fileName, $fileData);
+		$bg = imagecreatefrompng($fileName);
+
+		$overlays = json_decode($params["overlays"]);
+		list($width, $height) = getimagesize($fileName);
+		$out = imagecreatetruecolor($width, $height);
+		imagecopyresampled($out, $bg, 0, 0, 0, 0, $width, $height, $width, $height);
+		foreach ($overlays as $overlay) {
+			$img = imagecreatefrompng($overlay->src);
+			$posX = $overlay->posX;
+			$posY = $overlay->posY;
+			$overlayWidth = $overlay->width;
+			$overlayHeight = $overlay->height;
+			list($pngWidth, $pngHeight) = getimagesize($fileName);
+			imagecopyresized($out, $img, $posX, $posY, 0, 0, $overlayWidth, $overlayHeight, $pngWidth, $pngHeight);
+		}
+		imagejpeg($out, 'img/out.jpg', 100);
+		echo 'img/out.jpg';
+    }
+
+
+
 	private function generateToken($length = 10) {
 		$chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		$charsLen = strlen($chars);

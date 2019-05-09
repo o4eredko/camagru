@@ -28,7 +28,7 @@ class MainController extends Controller {
 	}
 
 	public function postAction() {
-		if (!isset($_GET["id"]))
+		if (!isset($_GET["id"]) || !isset($_SESSION["user"]))
 			header("Location: /");
 		$data["post"] = $this->model->getPost($_GET["id"]);
 		$data["likedPosts"] = $this->model->getLikedPosts();

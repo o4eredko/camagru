@@ -331,6 +331,54 @@ if (elem) elem.onsubmit = (e) => {
 	}
 };
 
+/*-----------------Draggable images-----------------*/
+function dragImgOnCanvas(e) {
+	let img = e.target;
+	let cords = getCords(img);
+	let shiftX = e.pageX - cords.left;
+	let shiftY = e.pageY - cords.top;
+	let parentPos = document.querySelector(".snapshot__area").getBoundingClientRect();
+
+	function moveAt(e) {
+		img.style.left = e.pageX - parentPos.left - shiftX + "px";
+		img.style.top = e.pageY - parentPos.top - shiftY + "px";
+	}
+	moveAt(e);
+
+	document.onmousemove = (e) => {
+		moveAt(e);
+	};
+	img.onmouseup = () => {
+		document.onmousemove = null;
+		img.onmouseup = null;
+	};
+	img.ondragstart = () => {
+		return false;
+	};
+
+	function getCords(elem) {
+		let box = elem.getBoundingClientRect();
+		return {
+			left: box.left + pageXOffset,
+			top: box.top + pageYOffset
+		};
+	}
+
+}
+
+elem = document.querySelectorAll(".imgToDrag");
+for (let i = elem.length - 1; i >= 0; i--) {
+	let img = elem[i];
+	img.onclick = () => {
+		let copy = document.createElement("img");
+		copy.classList.add("dragImg");
+		copy.src = img.src;
+		copy.alt = img.alt;
+		document.querySelector(".snapshot__area").appendChild(copy);
+		copy.onmousedown = dragImgOnCanvas;
+	};
+}
+
 /*-----------------Camera-----------------*/
 
 const camSupported = "mediaDevices" in navigator;
@@ -342,31 +390,56 @@ if (camSupported && cam) {
 	const constraints = {
 		video: true
 	};
-	snapButton.addEventListener("click", () => {
-		// snapshot.hidden = false;
-		// cam.hidden = true;
-		context.drawImage(cam, 0, 0, snapshot.width, snapshot.height);
-		cam.srcObject.getVideoTracks().forEach(track => track.stop());
-	});
+	let playVideo = true;
 
 	navigator.mediaDevices.getUserMedia(constraints)
 	.then((stream) => {
 		cam.srcObject = stream;
 		cam.addEventListener("playing", () => {
-			const styles = getComputedStyle(cam);
-			snapshot.height = parseInt(styles.height);
-			snapshot.width = parseInt(styles.width);
-			let img = new Image();
-			img.src = "img/leopard_sunglasses.png";
-			console.log(img);
+			const camStyles = getComputedStyle(cam);
+			snapshot.height = parseInt(camStyles.height);
+			snapshot.width = parseInt(camStyles.width);
+			cam.hidden = true;
 			function step() {
-				context.drawImage(cam, 0, 0);
-				context.drawImage(img, snapshot.width / 2 - img.width / 8, snapshot.height / 2 - img.height / 8, img.width / 4, img.height / 4);
+				if (playVideo)
+					context.drawImage(cam, 0, 0);
 				requestAnimationFrame(step);
 			}
 			requestAnimationFrame(step);
 		});
 	});
+
+	snapButton.onclick = () => {
+		const snapshot = document.getElementById("snapshot");
+		playVideo = false;
+		let overlays = document.querySelectorAll(".snapshot__area .dragImg");
+		let overlaysToUpload = [];
+		let data = new FormData;
+		let xhr = new XMLHttpRequest();
+
+		for (let i = overlays.length - 1; i >= 0; i--) {
+			let elemStyles = getComputedStyle(overlays[i]);
+			overlays[i].onmousedown = null;
+			overlaysToUpload.push({
+				"src": overlays[i].src,
+				"posX": parseInt(elemStyles.left),
+				"posY": parseInt(elemStyles.top),
+				"width": parseInt(elemStyles.width),
+				"height": parseInt(elemStyles.height)
+			});
+		}
+		data.append("overlays", JSON.stringify(overlaysToUpload));
+		data.append("img", snapshot.toDataURL());
+		xhr.open("POST", "ajax?action=snapshot", true);
+		xhr.send(data);
+		xhr.onreadystatechange = () => {
+			if (xhr.readyState === 4 && xhr.status === 200) {
+				let img = new Image();
+				img.src = xhr.responseText;
+				document.body.appendChild(img);
+			}
+		}
+	};
 }
 
 /*-----------------Likes and comments-----------------*/

@@ -43,6 +43,8 @@ class Main extends Model {
 	}
 
 	public function getLikedPosts() {
+		if (!isset($_SESSION["user"]))
+			return [];
 		$sql = "SELECT post_id FROM `likes` WHERE owner=?";
 		$response = $this->db->query($sql, [$_SESSION["user"]]);
 		$res = $response->fetchAll(PDO::FETCH_COLUMN);
