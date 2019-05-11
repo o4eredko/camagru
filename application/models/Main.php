@@ -14,7 +14,7 @@ class Main extends Model {
 
 	public function getUserData() {
 		if (!empty($_SESSION["user"])) {
-			$sql = "SELECT username, email, pass FROM `users` WHERE username=?";
+			$sql = "SELECT username, email, pass, notifications FROM `users` WHERE username=?";
 			$response = $this->db->query($sql, [$_SESSION["user"]]);
 			$res = $response->fetch(PDO::FETCH_ASSOC);
 			return $res;
@@ -23,7 +23,7 @@ class Main extends Model {
 	}
 
 	public function getPosts() {
-		$response = $this->pdo->query("SELECT * FROM `posts`");
+		$response = $this->pdo->query("SELECT * FROM `posts` ORDER BY creation_date DESC");
 		$posts = $response->fetchAll(PDO::FETCH_ASSOC);
 		for ($i = 0; $i < count($posts); $i++) {
 			$posts[$i]["likes"] = $this->getLikesNum($posts[$i]["id"]);

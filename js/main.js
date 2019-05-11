@@ -222,227 +222,8 @@ if (elem && $_GET["action"] === "forgot" && "id" in $_GET && "token" in $_GET) {
 	elem.classList.add("active");
 }
 
-/*-----------------Pagination-----------------*/
-
-function pagination(slider, settings) {
-	if (!slider) return;
-	settings.maxPages = Math.ceil(slider.children.length / settings.maxElems);
-	let i = 0;
-	let len = slider.children.length;
-	while (i < len) {
-		let container = document.createElement("div");
-		container.classList.add("slide");
-		let j = -1;
-		while (++j < settings.maxElems && i++ < len)
-			container.appendChild(slider.children[0]);
-		slider.appendChild(container);
-	}
-	slider.children[0].classList.add("active");
-	for (i = 0; i < slider.children.length; i++)
-		slider.children[i].setAttribute("data-slide-id", i);
-
-	let links = document.createElement("div");
-	links.classList.add("slider-links");
-	for (i = 0; i < settings.maxPages; i++) {
-		let link = document.createElement("span");
-		link.classList.add("slider-links__item");
-		link.setAttribute("data-link-id", i);
-		link.onclick = function(e) {
-			let id = e.target.getAttribute("data-link-id");
-			let slideToShow = document.querySelector(".slider .slide[data-slide-id='" + id + "']");
-			let currentSlide = document.querySelector(".slider .slide.active");
-			let currentLink = document.querySelector(".slider .slider-links__item.active");
-			currentSlide.classList.remove("active");
-			currentLink.classList.remove("active");
-			slideToShow.classList.add("active");
-			e.target.classList.add("active");
-		};
-		links.appendChild(link);
-	}
-	links.children[0].classList.add("active");
-	slider.appendChild(links);
-}
-
-let paginationSettings = {
-	maxElems: 8
-};
-pagination(document.querySelector(".slider"), paginationSettings);
-
-
-/*-----------------Drag And Drop-----------------*/
-
-let	isDragAllowed = function() {
-	let div = document.createElement('div');
-	return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
-}();
-
-let add_photo = new FormData();
-let dropArea = document.querySelector(".add_photo__form .add_photo__area");
-if (isDragAllowed && dropArea) {
-	function dragOver() {
-		dropArea.classList.add("highlight");
-	}
-	function dragLeave() {
-		dropArea.classList.remove("highlight");
-	}
-	function handleDrop(e) {
-		let dt = e.dataTransfer;
-		let file = dt.files[0];
-
-		addPhoto(file);
-	}
-	function addPhoto(file) {
-		add_photo.append("img", file);
-		dropArea.classList.add("selected");
-	}
-
-	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, (e) => {
-			e.stopPropagation();
-			e.preventDefault();
-		}, false)
-	});
-	['dragenter', 'dragover'].forEach(eventName => {
-		dropArea.addEventListener(eventName, dragOver, false)
-	});
-	['dragleave', 'drop'].forEach(eventName => {
-		dropArea.addEventListener(eventName, dragLeave, false)
-	});
-	dropArea.addEventListener('drop', handleDrop, false);
-}
-
-elem = document.querySelector(".add_photo__form");
-if (elem) elem.onsubmit = (e) => {
-	e.preventDefault();
-	let data = new FormData(e.target);
-	data.append("action", "addPhoto");
-	data.set("img", add_photo.get("img"));
-	let xhr = new XMLHttpRequest();
-
-	xhr.open('POST', 'ajax', true);
-	xhr.send(data);
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState !== 4) {
-		} else {
-			if (xhr.status === 200) {
-				console.log(xhr.responseText);
-			}
-		}
-	}
-};
-
-/*-----------------Draggable images-----------------*/
-function dragImgOnCanvas(e) {
-	let img = e.target;
-	let cords = getCords(img);
-	let shiftX = e.pageX - cords.left;
-	let shiftY = e.pageY - cords.top;
-	let parentPos = document.querySelector(".snapshot__area").getBoundingClientRect();
-
-	function moveAt(e) {
-		img.style.left = e.pageX - parentPos.left - shiftX + "px";
-		img.style.top = e.pageY - parentPos.top - shiftY + "px";
-	}
-	moveAt(e);
-
-	document.onmousemove = (e) => {
-		moveAt(e);
-	};
-	img.onmouseup = () => {
-		document.onmousemove = null;
-		img.onmouseup = null;
-	};
-	img.ondragstart = () => {
-		return false;
-	};
-
-	function getCords(elem) {
-		let box = elem.getBoundingClientRect();
-		return {
-			left: box.left + pageXOffset,
-			top: box.top + pageYOffset
-		};
-	}
-
-}
-
-elem = document.querySelectorAll(".imgToDrag");
-for (let i = elem.length - 1; i >= 0; i--) {
-	let img = elem[i];
-	img.onclick = () => {
-		let copy = document.createElement("img");
-		copy.classList.add("dragImg");
-		copy.src = img.src;
-		copy.alt = img.alt;
-		document.querySelector(".snapshot__area").appendChild(copy);
-		copy.onmousedown = dragImgOnCanvas;
-	};
-}
-
-/*-----------------Camera-----------------*/
-
-const camSupported = "mediaDevices" in navigator;
-const cam = document.getElementById("cam");
-if (camSupported && cam) {
-	const snapshot = document.getElementById("snapshot");
-	const context = snapshot.getContext("2d");
-	const snapButton = document.getElementById("snap-button");
-	const constraints = {
-		video: true
-	};
-	let playVideo = true;
-
-	navigator.mediaDevices.getUserMedia(constraints)
-	.then((stream) => {
-		cam.srcObject = stream;
-		cam.addEventListener("playing", () => {
-			const camStyles = getComputedStyle(cam);
-			snapshot.height = parseInt(camStyles.height);
-			snapshot.width = parseInt(camStyles.width);
-			cam.hidden = true;
-			function step() {
-				if (playVideo)
-					context.drawImage(cam, 0, 0);
-				requestAnimationFrame(step);
-			}
-			requestAnimationFrame(step);
-		});
-	});
-
-	snapButton.onclick = () => {
-		const snapshot = document.getElementById("snapshot");
-		playVideo = false;
-		let overlays = document.querySelectorAll(".snapshot__area .dragImg");
-		let overlaysToUpload = [];
-		let data = new FormData;
-		let xhr = new XMLHttpRequest();
-
-		for (let i = overlays.length - 1; i >= 0; i--) {
-			let elemStyles = getComputedStyle(overlays[i]);
-			overlays[i].onmousedown = null;
-			overlaysToUpload.push({
-				"src": overlays[i].src,
-				"posX": parseInt(elemStyles.left),
-				"posY": parseInt(elemStyles.top),
-				"width": parseInt(elemStyles.width),
-				"height": parseInt(elemStyles.height)
-			});
-		}
-		data.append("overlays", JSON.stringify(overlaysToUpload));
-		data.append("img", snapshot.toDataURL());
-		xhr.open("POST", "ajax?action=snapshot", true);
-		xhr.send(data);
-		xhr.onreadystatechange = () => {
-			if (xhr.readyState === 4 && xhr.status === 200) {
-				let img = new Image();
-				img.src = xhr.responseText;
-				document.body.appendChild(img);
-			}
-		}
-	};
-}
-
 /*-----------------Likes and comments-----------------*/
+
 function likePost(e) {
 	let liked = e.target.classList.contains("active");
 	let xhr = new XMLHttpRequest();
@@ -456,7 +237,7 @@ function likePost(e) {
 			e.target.classList.toggle("active");
 			let likesNum = parseInt(e.target.nextSibling.textContent);
 			likesNum += (liked) ? -1 : 1;
-			e.target.nextSibling.textContent = likesNum;
+			e.target.nextSibling.textContent = likesNum.toString();
 		}
 	}
 }
@@ -500,7 +281,7 @@ function commentPost(e) {
 			if (!elem) return ;
 			let commentsNum = parseInt(elem.childNodes[1].textContent);
 			commentsNum++;
-			elem.childNodes[1].textContent = commentsNum;
+			elem.childNodes[1].textContent = commentsNum.toString();
 		}
 	}
 }
@@ -508,9 +289,9 @@ elem = document.querySelector(".post-comment__form");
 if (elem) elem.onsubmit = commentPost;
 
 function delComment(e) {
+	let params = "?action=delElem&where=comments&id=" + e.target.getAttribute("data-comment-id");
 	let xhr = new XMLHttpRequest();
-	xhr.open("GET", "ajax?action=delComment&id=" +
-		e.target.getAttribute("data-comment-id"), true);
+	xhr.open("GET", "ajax" + params, true);
 	xhr.send();
 
 	xhr.onreadystatechange = function() {
@@ -520,7 +301,338 @@ function delComment(e) {
 			if (!elem) return ;
 			let commentsNum = parseInt(elem.childNodes[1].textContent);
 			commentsNum--;
-			elem.childNodes[1].textContent = commentsNum;
+			elem.childNodes[1].textContent = commentsNum.toString();
+		}
+	}
+}
+
+function delPost(e) {
+	let id = e.target.getAttribute("data-post-id");
+	let params = "?action=delPost&id=" + id;
+	let xhr = new XMLHttpRequest();
+	xhr.open("GET", "ajax" + params, true);
+	xhr.send();
+
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			let post = document.querySelector(".post[data-id='" + id + "']").parentNode;
+			post.parentNode.removeChild(post);
+		}
+	}
+}
+elem = document.querySelectorAll(".post__del");
+for (let i = elem.length - 1; i >= 0; i--)
+	elem[i].onclick = delPost;
+
+
+/*-----------------Pagination-----------------*/
+
+function pagination(slider, settings) {
+	if (!slider) return;
+	settings.maxPages = Math.ceil(slider.children.length / settings.maxElems);
+	let i = 0;
+	let len = slider.children.length;
+	while (i < len) {
+		let container = document.createElement("div");
+		container.classList.add("slide");
+		let j = -1;
+		while (++j < settings.maxElems && i++ < len)
+			container.appendChild(slider.children[0]);
+		slider.appendChild(container);
+	}
+	slider.children[0].classList.add("active");
+	for (i = 0; i < slider.children.length; i++)
+		slider.children[i].setAttribute("data-slide-id", i);
+
+	let links = document.createElement("div");
+	links.classList.add("slider-links");
+	for (i = 0; i < settings.maxPages; i++) {
+		let link = document.createElement("span");
+		link.classList.add("slider-links__item");
+		link.setAttribute("data-link-id", i);
+		link.onclick = function(e) {
+			let id = e.target.getAttribute("data-link-id");
+			let slideToShow = document.querySelector(".slider .slide[data-slide-id='" + id + "']");
+			let currentSlide = document.querySelector(".slider .slide.active");
+			let currentLink = document.querySelector(".slider .slider-links__item.active");
+			currentSlide.classList.remove("active");
+			currentLink.classList.remove("active");
+			slideToShow.classList.add("active");
+			e.target.classList.add("active");
+		};
+		links.appendChild(link);
+	}
+	links.children[0].classList.add("active");
+	slider.appendChild(links);
+}
+
+pagination(document.querySelector(".slider"), {
+	maxElems: 8
+});
+
+/*-----------------Camera-----------------*/
+
+const camSupported = "mediaDevices" in navigator;
+const cam = document.getElementById("cam");
+if (camSupported && cam) {
+	const snapshot = document.getElementById("snapshot");
+	const context = snapshot.getContext("2d");
+	const snapButton = document.getElementById("snap-button");
+	let playVideo = true;
+
+	navigator.mediaDevices.getUserMedia({video: true})
+	.then((stream) => {
+		cam.srcObject = stream;
+		cam.addEventListener("playing", () => {
+			const camStyles = getComputedStyle(cam);
+			snapshot.height = parseInt(camStyles.height);
+			snapshot.width = parseInt(camStyles.width);
+			cam.hidden = true;
+			function step() {
+				if (playVideo) {
+					context.drawImage(cam, 0, 0);
+					requestAnimationFrame(step);
+				}
+			}
+			requestAnimationFrame(step);
+		});
+	});
+
+	snapButton.onclick = () => {
+		const overlays = document.querySelectorAll(".snapshot__area .dragImg img");
+		let overlaysToUpload = [];
+		let data = new FormData;
+		let xhr = new XMLHttpRequest();
+		playVideo = false;
+
+		for (let i = overlays.length - 1; i >= 0; i--) {
+			const elemStyles = getComputedStyle(overlays[i].parentNode);
+			overlays[i].onmousedown = null;
+			overlaysToUpload.push({
+				"src": overlays[i].src,
+				"posX": parseInt(elemStyles.left),
+				"posY": parseInt(elemStyles.top),
+				"width": parseInt(elemStyles.width),
+				"height": parseInt(elemStyles.height)
+			});
+			overlays[i].parentNode.removeChild(overlays[i]);
+		}
+		data.append("overlays", JSON.stringify(overlaysToUpload));
+		data.append("img", snapshot.toDataURL());
+		xhr.open("POST", "ajax?action=snapshot", true);
+		xhr.send(data);
+		xhr.onreadystatechange = () => {
+			if (xhr.readyState === 4 && xhr.status === 200) {
+				let img = new Image();
+				img.src = xhr.responseText;
+				img.onload = () => {
+					context.drawImage(img, 0, 0, snapshot.width, snapshot.height);
+					snapshot.toBlob((blob) => {
+						addPhoto(blob, img.src)
+					}, "image/jpeg", 1);
+				};
+			}
+		}
+	};
+}
+
+/*-----------------Drag And Drop-----------------*/
+
+let	isDragAllowed = function() {
+	let div = document.createElement('div');
+	return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+}();
+
+let add_photo = new FormData();
+let dropArea = document.querySelector(".add_photo__form .add_photo__area");
+
+function addPhoto(file, filename = null) {
+	if (filename) {
+		add_photo.append("img", file, filename);
+	} else {
+		add_photo.append("img", file);
+	}
+	dropArea.classList.add("highlight");
+}
+
+if (isDragAllowed && dropArea) {
+	function dragOver() {
+		dropArea.classList.add("highlight");
+	}
+	function dragLeave() {
+		dropArea.classList.remove("highlight");
+	}
+	function handleDrop(e) {
+		let dt = e.dataTransfer;
+		let file = dt.files[0];
+		addPhoto(file);
+	}
+
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+		}, false)
+	});
+	['dragenter', 'dragover'].forEach(eventName => {
+		dropArea.addEventListener(eventName, dragOver, false)
+	});
+	['dragleave', 'drop'].forEach(eventName => {
+		dropArea.addEventListener(eventName, dragLeave, false)
+	});
+	dropArea.addEventListener('drop', handleDrop, false);
+}
+
+elem = document.querySelector(".add_photo__form");
+if (elem) elem.onsubmit = (e) => {
+	e.preventDefault();
+	let data = new FormData(e.target);
+	data.append("action", "addPost");
+	data.set("img", add_photo.get("img"));
+	let xhr = new XMLHttpRequest();
+
+	xhr.open('POST', 'ajax', true);
+	xhr.send(data);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			location.replace(location.origin);
+		}
+	}
+};
+
+function dragImgOnCanvas(e) {
+	if (!e.currentTarget.classList.contains("dragImg"))
+		return ;
+	let img = e.currentTarget;
+	let cords = getCords(img);
+	let shiftX = e.pageX - cords.left;
+	let shiftY = e.pageY - cords.top;
+	let parentPos = document.querySelector(".snapshot__area").getBoundingClientRect();
+
+	function moveAt(e) {
+		img.style.left = e.pageX - parentPos.left - window.scrollX - shiftX + "px";
+		img.style.top = e.pageY - parentPos.top - window.scrollY - shiftY + "px";
+	}
+	moveAt(e);
+
+	document.addEventListener("mousemove", moveAt);
+	img.addEventListener("mouseup", () => {
+		document.removeEventListener("mousemove", moveAt);
+	});
+	img.ondragstart = () => {return false};
+
+	function getCords(elem) {
+		let box = elem.getBoundingClientRect();
+		return {
+			left: box.left + pageXOffset,
+			top: box.top + pageYOffset
+		};
+	}
+}
+
+function appendSticker(e) {
+	let container = document.querySelector(".snapshot__area");
+	let wrapper = document.createElement("div");
+	let copy = document.createElement("img");
+	const resizerPos = [
+		"top-left",
+		"top-right",
+		"bottom-left",
+		"bottom-right"
+	];
+
+	wrapper.classList.add("dragImg");
+	for (let i = 0; i < 4; i++) {
+		elem = document.createElement("div");
+		elem.classList.add("resizer");
+		elem.classList.add(resizerPos[i]);
+		wrapper.appendChild(elem);
+		switchOnResizing(elem);
+	}
+	copy.src = e.target.src;
+	copy.alt = e.target.alt;
+	wrapper.onmousedown = dragImgOnCanvas;
+	wrapper.appendChild(copy);
+	container.appendChild(wrapper);
+}
+
+elem = document.querySelectorAll(".sticker");
+for (let i = elem.length - 1; i >= 0; i--) {
+	elem[i].onclick = appendSticker;
+}
+
+/*-----------------Resize Sticker-----------------*/
+
+function switchOnResizing(elem) {
+	const minimum_size = 20;
+	let original_width = 0;
+	let original_height = 0;
+	let original_x = 0;
+	let original_y = 0;
+	let original_mouse_x = 0;
+	let original_mouse_y = 0;
+	let toResize = elem.parentNode;
+
+	elem.addEventListener('mousedown', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		let toResizeStyles = getComputedStyle(toResize);
+		original_width = parseFloat(toResizeStyles.width);
+		original_height = parseFloat(toResizeStyles.height);
+		original_x = parseInt(toResizeStyles.left);
+		original_y = parseInt(toResizeStyles.top);
+		original_mouse_x = e.pageX;
+		original_mouse_y = e.pageY;
+		window.addEventListener('mousemove', resize);
+		window.addEventListener('mouseup', () => {
+			window.removeEventListener("mousemove", resize);
+		});
+	});
+
+	function resize(e) {
+		if (e.target.classList.contains('bottom-right')) {
+			const width = original_width + (e.pageX - original_mouse_x);
+			const height = original_height + (e.pageY - original_mouse_y);
+			if (width > minimum_size) {
+				toResize.style.width = width + 'px'
+			}
+			if (height > minimum_size) {
+				toResize.style.height = height + 'px'
+			}
+		}
+		else if (e.target.classList.contains('bottom-left')) {
+			const height = original_height + (e.pageY - original_mouse_y);
+			const width = original_width - (e.pageX - original_mouse_x);
+			if (height > minimum_size) {
+				toResize.style.height = height + 'px'
+			}
+			if (width > minimum_size) {
+				toResize.style.width = width + 'px';
+				toResize.style.left = original_x + (e.pageX - original_mouse_x) + 'px'
+			}
+		}
+		else if (e.target.classList.contains('top-right')) {
+			const width = original_width + (e.pageX - original_mouse_x);
+			const height = original_height - (e.pageY - original_mouse_y);
+			if (width > minimum_size) {
+				toResize.style.width = width + 'px'
+			}
+			if (height > minimum_size) {
+				toResize.style.height = height + 'px';
+				toResize.style.top = original_y + (e.pageY - original_mouse_y) + 'px'
+			}
+		}
+		else {
+			const width = original_width - (e.pageX - original_mouse_x);
+			const height = original_height - (e.pageY - original_mouse_y);
+			if (width > minimum_size) {
+				toResize.style.width = width + 'px';
+				toResize.style.left = original_x + (e.pageX - original_mouse_x) + 'px'
+			}
+			if (height > minimum_size) {
+				toResize.style.height = height + 'px';
+				toResize.style.top = original_y + (e.pageY - original_mouse_y) + 'px'
+			}
 		}
 	}
 }

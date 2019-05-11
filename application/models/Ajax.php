@@ -57,13 +57,14 @@ class Ajax extends Model {
 		if (!$res["wrong_oldpass"] && $res["email_confirmed"] &&
 			!$res["user_exists"] && !$res["email_exists"])
 		{
-			$sql = "UPDATE `users` SET username=:user, email=:email, pass=:pass, status=:status, token=:token WHERE id=:id";
+			$sql = "UPDATE `users` SET username=:user, email=:email, pass=:pass, status=:status, token=:token, notifications=:notif WHERE id=:id";
 			$values = [
 				"user" => $params["newuser"],
 				"email" => $params["newemail"],
 				"pass" => hash("whirlpool", $params["pass"]),
 				"status" => $params["status"],
-				"id" => $user["id"]
+				"id" => $user["id"],
+                "notif" => isset($params["notifications"])
 			];
 			$values["token"] = $user["token"];
 			$this->db->query($sql, $values);
@@ -115,14 +116,30 @@ class Ajax extends Model {
 		}
 	}
 
-	public function addPhoto($params) {
+	public function addPost($params) {
 		$img = $_FILES["img"]["tmp_name"];
-		move_uploaded_file($img, "img/" . $_FILES["img"]["name"]);
-		$params["img"] = "img/" . $_FILES["img"]["name"];
+		$filename = $_FILES["img"]["name"];
+		if (!preg_match("#^" . $_SESSION["user"] . "_.*$#", $filename)) {
+			$filename = $_SESSION["user"] . "_" . $filename;
+		}
+		move_uploaded_file($img, "img/" . $filename);
+		$params["img"] = "img/" . $filename;
 		$params["owner"] = $_SESSION["user"];
 		$sql = "INSERT INTO `posts` SET owner=:owner, title=:title, description=:description, img=:img";
 		$this->db->query($sql, $params);
 		header("Location: /" . BASE_DIR);
+	}
+
+	public function delPost($params) {
+		if (!isset($params["id"]) || !$_SESSION["user"])
+			exit("Error");
+		$post = $this->db->row("SELECT * FROM `posts` WHERE id=?", [$params["id"]]);
+		if ($post["owner"] != $_SESSION["user"])
+		    exit("You are a hacker ???? I'have bitten U!)");
+		$this->db->query("DELETE FROM `posts` WHERE id=?", [$params["id"]]);
+		$this->db->query("DELETE FROM `likes` WHERE post_id=?", [$params["id"]]);
+		$this->db->query("DELETE FROM `comments` WHERE post_id=?", [$params["id"]]);
+		unlink($post["img"]);
 	}
 
 	private function sendMail($user, $opt) {
@@ -174,10 +191,11 @@ class Ajax extends Model {
 		$this->db->query($sql, $values);
 	}
 
-	public function delComment($params) {
+	public function delElem($params) {
 		if (!isset($params["id"]))
 			exit("Error");
-		$sql = "DELETE FROM `comments` WHERE id=?";
+		$table = $params["where"];
+		$sql = "DELETE FROM $table WHERE id=?";
 		$this->db->query($sql, [$params["id"]]);
 	}
 
@@ -200,32 +218,29 @@ class Ajax extends Model {
 	public function snapshot($params) {
 	    if (!isset($params["img"]))
 	        exit("No image");
-		$img = $params["img"];
-		$img = str_replace('data:image/png;base64,', '', $img);
-		$img = str_replace(' ', '+', $img);
-		$fileName = "img/snapshot_tmp.png";
-		$fileData = base64_decode($img);
-		file_put_contents($fileName, $fileData);
-		$bg = imagecreatefrompng($fileName);
-
-		$overlays = json_decode($params["overlays"]);
-		list($width, $height) = getimagesize($fileName);
+		$srcImg = $params["img"];
+		$srcImg = str_replace('data:image/png;base64,', '', $srcImg);
+		$srcImg = str_replace(' ', '+', $srcImg);
+		$srcData = base64_decode($srcImg);
+		$bg = imagecreatefromstring($srcData);
+		list($width, $height) = getimagesizefromstring($srcData);
 		$out = imagecreatetruecolor($width, $height);
+
 		imagecopyresampled($out, $bg, 0, 0, 0, 0, $width, $height, $width, $height);
+		$overlays = json_decode($params["overlays"]);
 		foreach ($overlays as $overlay) {
 			$img = imagecreatefrompng($overlay->src);
 			$posX = $overlay->posX;
 			$posY = $overlay->posY;
-			$overlayWidth = $overlay->width;
-			$overlayHeight = $overlay->height;
-			list($pngWidth, $pngHeight) = getimagesize($fileName);
-			imagecopyresized($out, $img, $posX, $posY, 0, 0, $overlayWidth, $overlayHeight, $pngWidth, $pngHeight);
+			$width = $overlay->width;
+			$height = $overlay->height;
+			$img = imagescale($img, $width, $height);
+			imagecopyresampled($out, $img, $posX, $posY, 0, 0, $width, $height, $width, $height);
 		}
-		imagejpeg($out, 'img/out.jpg', 100);
-		echo 'img/out.jpg';
+		$imgName = "img/" . $_SESSION["user"] ."_" . $this->generateToken(8) . ".jpg";
+		imagejpeg($out, $imgName, 100);
+		echo $imgName;
     }
-
-
 
 	private function generateToken($length = 10) {
 		$chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";

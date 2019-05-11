@@ -5,9 +5,8 @@ body, ul, li, p, h1, h2, h3 {
 
 body {
 	font-family: 'HelveticaNeueCyr';
-	margin-top: 75px;
 	min-height: calc(100vh - 75px);
-	padding-bottom: 75px;
+	padding: 75px 0;
 	position: relative;
 }
 
@@ -268,6 +267,11 @@ header a {
 
 .post__stat i {
 	margin-right: 5px;
+	transition: .15s ease-in all;
+}
+
+.post__stat i:hover {
+	color: #0d58c8;
 }
 
 .post__stat i.like.active {
@@ -427,7 +431,7 @@ header a {
 	outline: none;
 }
 
-.dragImg__container {
+.sticker__container {
 	display: flex;
 	align-items: center;
 	height: 150px;
@@ -436,19 +440,56 @@ header a {
 
 .snapshot__area {
 	position: relative;
+	overflow: hidden;
 }
 
-.imgToDrag {
+.sticker {
 	max-width: 140px;
 	cursor: pointer;
 }
 
 .dragImg {
-	max-width: 140px;
-	cursor: pointer;
+	width: 140px;
 	position: absolute;
 	top: 0;
 	left: 0;
+	border: 2px solid #fff;
+	box-sizing: border-box;
+	resize: both;
+}
+
+.resizer {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	border-radius: 100%;
+	background-color: #ff6767;
+	cursor: pointer;
+	z-index: 999;
+}
+
+.resizer.top-left {
+	top: -5px;
+	left: -5px;
+}
+
+.resizer.top-right {
+	top: -5px;
+	right: -5px;
+}
+
+.resizer.bottom-left {
+	bottom: -5px;
+	left: -5px;
+}
+
+.resizer.bottom-right {
+	bottom: -5px;
+	right: -5px;
+}
+
+.dragImg img {
+	max-width: 100%;
 }
 
 /*-----------------Footer-----------------*/
@@ -562,6 +603,57 @@ footer {
 
 .forgot-pass__link:hover {
 	color: #fff;
+}
+
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 60px;
+	height: 34px;
+}
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.switch__toggle {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	-webkit-transition: .4s;
+	transition: .4s;
+}
+
+.switch__toggle:before {
+	position: absolute;
+	content: "";
+	height: 26px;
+	width: 26px;
+	left: 4px;
+	bottom: 4px;
+	background-color: white;
+	-webkit-transition: .4s;
+	transition: .4s;
+}
+
+input:checked + .switch__toggle {
+	background-color: #0d58c8;
+}
+
+input:focus + .switch__toggle {
+	box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .switch__toggle:before {
+	-webkit-transform: translateX(26px);
+	-ms-transform: translateX(26px);
+	transform: translateX(26px);
 }
 
 /*Post*/

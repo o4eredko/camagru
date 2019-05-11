@@ -166,6 +166,16 @@
                             <input type="password" name="repass" placeholder="Repeat New Password">
                             <label hidden for="repass">Password and Repassword must be identical</label>
                         </div>
+                        <div class="col-6">
+                            <label class="switch">
+                            <?php if ($notifications): ?>
+                                <input type="checkbox" name="notifications" checked class="switch__toggle">
+                            <?php else: ?>
+                                <input type="checkbox" name="notifications">
+							<?php endif; ?>
+                                <span class="switch__toggle"></span>
+                            </label>
+                        </div>
                     </div>
                     <img class="loading" src="img/loading.gif" alt="Camagru Loading">
                     <p class="form__confirmation" hidden>You have to confirm your email first</p>
