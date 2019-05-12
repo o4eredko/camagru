@@ -129,6 +129,7 @@ class Ajax extends Model {
 	}
 
 	public function addPost($params) {
+	    debug([$params["csrf"], $_SESSION["csrf"]]);
 		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
 			exit("Csrf attack!!!");
 		$img = $_FILES["img"]["tmp_name"];

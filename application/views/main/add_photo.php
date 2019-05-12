@@ -11,6 +11,7 @@
                     <img src="img/leopard_sunglasses.png" alt="Camagru" class="sticker">
                     <img src="img/black.png" alt="Camagru" class="sticker">
                     <img src="img/sigarette.png" alt="Camagru" class="sticker">
+                    <img src="img/dinosaur.png" alt="Camagru" class="sticker">
                 </div>
                 <button class="button button-transparent" id="snap-button">Take a photo</button>
             </div>

@@ -23,6 +23,10 @@ return [
 		"controller" => "main",
 		"action" => "post"
 	],
+	"profile" => [
+		"controller" => "main",
+		"action" => "profile"
+	],
 	"ajax" => [
 		"controller" => "ajax",
 		"action" => "request"

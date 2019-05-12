@@ -15,7 +15,7 @@ class Router {
 	}
 
 	public function add($route, $params) {
-		$route = "#^" . BASE_DIR . '/*' . $route . "(\?.*|$)#";
+		$route = "#^\/*" . $route . "(\?.*|$)#";
 		$this->routes[$route] = $params;
 	}
 
@@ -44,6 +44,8 @@ class Router {
 			} else {
                 View::errorCode(404);
             }
+		} else {
+			header("Location: /");
 		}
 	}
 

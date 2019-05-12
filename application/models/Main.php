@@ -9,7 +9,15 @@
 namespace application\models;
 use application\core\Model;
 use PDO;
-
+if ($_SERVER["REQUEST_URI"] == "/add_post") {
+	if (version_compare(PHP_VERSION, "7.0.0", ">=")) {
+		$_SESSION["csrf"] = bin2hex(random_bytes(32));
+		if ($_SERVER["REQUEST_URI"] != "/add_photo")
+			debug($_SERVER["REQUEST_URI"] . "\n");
+	} else {
+		$_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(32));
+	}
+}
 class Main extends Model {
 
 	public function getUserData() {

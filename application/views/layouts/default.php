@@ -22,8 +22,7 @@
                     <nav class="main-menu">
                         <ul class="main-menu__list">
                             <li class="main-menu__item"><a href="/">Main Page</a></li>
-                            <li class="main-menu__item"><a href="/">Discover</a></li>
-                            <li class="main-menu__item"><a href="#">My Profile</a></li>
+                            <li class="main-menu__item"><a href="/profile">My Profile</a></li>
                             <li class="main-menu__item"><a href="/add_photo">Add photo</a></li>
                         </ul>
                     </nav>

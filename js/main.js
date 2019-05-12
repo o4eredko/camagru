@@ -422,7 +422,7 @@ if (camSupported && cam) {
 				"width": parseInt(elemStyles.width),
 				"height": parseInt(elemStyles.height)
 			});
-			overlays[i].parentNode.removeChild(overlays[i]);
+			overlays[i].parentNode.parentNode.removeChild(overlays[i].parentNode);
 		}
 		data.append("overlays", JSON.stringify(overlaysToUpload));
 		data.append("img", snapshot.toDataURL());
@@ -502,8 +502,8 @@ if (elem) elem.onsubmit = (e) => {
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			if (xhr.responseText !== "Csrf attack!!!")
-				location.replace(location.origin);
+			// if (xhr.responseText !== "Csrf attack!!!")
+			// 	location.replace(location.origin);
 		}
 	}
 };
