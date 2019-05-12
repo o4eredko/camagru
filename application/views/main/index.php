@@ -24,21 +24,24 @@
                         <p class="post__owner">by <a href="#"> <?= $post["owner"] ?></a></p>
                     </div>
                     <div class="post__stat">
-                        <?php if (in_array($post["id"], $likedPosts)): ?>
-                            <span class="post__like">
-                                <i class="fa fa-thumbs-up like active" data-post-id="<?= $post["id"] ?>"></i>
-                                <?= $post["likes"] ?>
-                            </span>
-						<?php else: ?>
-                            <span class="post__like">
-                                <i class="fa fa-thumbs-up like" data-post-id="<?= $post["id"] ?>"></i>
-                                <?= $post["likes"] ?>
-                            </span>
+						<?php if (!isset($_SESSION["user"])): ?>
+                            <a href="#" class="post__like" data-toggle-id="login">
+                        <?php elseif (in_array($post["id"], $likedPosts)): ?>
+                            <a href="#" class="post__like active" data-post-id="<?= $post["id"] ?>">
+                        <?php else: ?>
+                            <a href="#" class="post__like" data-post-id="<?= $post["id"] ?>">
 						<?php endif; ?>
-                        <a href="post?id= <?= $post["id"] ?>" class="post__comment">
+                            <i class="fa fa-thumbs-up"></i>
+                            <?= $post["likes"] ?>
+                        </a>
+                        <a href="post?id= <?= $post["id"] ?>" class="post__comment"
+                            <?php if (!isset($_SESSION["user"])): ?>
+                                data-toggle-id="login"
+                            <?php endif; ?>
+                        >
                             <i class="fas fa-comment comment"></i><?= $post["comments"] ?>
                         </a>
-                        <?php if ($post["owner"] == $_SESSION["user"]): ?>
+                        <?php if (isset($_SESSION["user"]) && $post["owner"] == $_SESSION["user"]): ?>
                             <span class="post__del">
                                 <i class="fas fa-trash-alt" data-post-id="<?= $post["id"] ?>"></i>
                             </span>

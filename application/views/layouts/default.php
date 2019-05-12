@@ -58,6 +58,7 @@
                     <a href="#" class="close" data-toggle-id="registration"><i class="fas fa-times"></i></a>
                     <h3>Register</h3>
                     <div class="row modal__form_row">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
                         <div class="col-6">
                             <input type="text" name="username" placeholder="Login" required>
                             <label hidden for="username">User with this username already exists</label>
@@ -91,6 +92,7 @@
                     <a href="#" class="close" data-toggle-id="login"><i class="fas fa-times"></i></a>
                     <h3>Log In</h3>
                     <div class="row modal__form_row">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
                         <div class="col-6">
                             <input type="text" name="username" placeholder="Login" required>
                             <label hidden for="username">Wrong username</label>
@@ -115,6 +117,7 @@
                     <a href="#" class="close" data-toggle-id="forgot"><i class="fas fa-times"></i></a>
                     <h3>Forgot your password?</h3>
                     <div class="row modal__form_row">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
                         <?php if ($passChangeAllowed): ?>
                         <div class="col-6">
                             <input type="password" name="pass" placeholder="New Password" required>
@@ -133,7 +136,7 @@
                     </div>
                     <img class="loading" src="img/loading.gif" alt="Camagru Loading">
                     <p class="form__confirmation" hidden>You have to confirm your e-mail first</p>
-                    <button class="button">Log in</button>
+                    <button class="button">Reset password</button>
                 </form>
             </div>
         </div>
@@ -146,6 +149,7 @@
                     <a href="#" class="close" data-toggle-id="settings"><i class="fas fa-times"></i></a>
                     <h3>Change your settings</h3>
                     <div class="row modal__form_row">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
                         <div class="col-6">
                             <input type="text" value="<?= $username ?>" name="newuser" placeholder="Login" required>
                             <label hidden for="newuser">User with this username already exists</label>

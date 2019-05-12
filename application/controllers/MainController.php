@@ -4,6 +4,12 @@
 namespace application\controllers;
 use application\core\Controller;
 
+if (version_compare(PHP_VERSION, "7.0.0", ">=")) {
+	$_SESSION["csrf"] = bin2hex(random_bytes(32));
+} else {
+	$_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(32));
+}
+
 class MainController extends Controller {
 
     public function indexAction() {
@@ -23,6 +29,9 @@ class MainController extends Controller {
 	}
 
 	public function add_photoAction() {
+    	if (!isset($_SESSION["user"])) {
+    		header("Location: /");
+		}
 		$data = $this->model->getUserData();
 		$this->view->render($data);
 	}
@@ -30,6 +39,7 @@ class MainController extends Controller {
 	public function postAction() {
 		if (!isset($_GET["id"]) || !isset($_SESSION["user"]))
 			header("Location: /");
+		$data = $this->model->getUserData();
 		$data["post"] = $this->model->getPost($_GET["id"]);
 		$data["likedPosts"] = $this->model->getLikedPosts();
 		$this->view->render($data);

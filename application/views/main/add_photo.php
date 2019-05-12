@@ -10,7 +10,7 @@
                 <div class="info__block sticker__container">
                     <img src="img/leopard_sunglasses.png" alt="Camagru" class="sticker">
                     <img src="img/black.png" alt="Camagru" class="sticker">
-<!--                    <img src="img/sigarette.png" alt="Camagru" class="sticker">-->
+                    <img src="img/sigarette.png" alt="Camagru" class="sticker">
                 </div>
                 <button class="button button-transparent" id="snap-button">Take a photo</button>
             </div>
@@ -18,7 +18,7 @@
 				<form class="add_photo__form" enctype="multipart/form-data">
 					<h3 class="add_photo__title">Add Photo</h3>
 					<div class="form__content">
-						<input type="hidden" name="action" value="addPhoto">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
 						<div class="add_photo__area">
 							<i class="fas fa-cloud-upload-alt"></i>
 							<input type="file" name="img" class ="add_photo__file" accept="image/*" onchange="addPhoto(this.files[0])">

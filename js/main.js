@@ -18,6 +18,11 @@ if (elem) elem.onclick = function forgotPass(event) {
 
 /*-----------------Forms-----------------*/
 
+function validateEmail(email) {
+	let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+	return re.test(String(email).toLowerCase());
+}
+
 function getLabels(form) {
 	if (!form) return;
 	let labels = {};
@@ -225,7 +230,9 @@ if (elem && $_GET["action"] === "forgot" && "id" in $_GET && "token" in $_GET) {
 /*-----------------Likes and comments-----------------*/
 
 function likePost(e) {
-	let liked = e.target.classList.contains("active");
+	e.preventDefault();
+	let link = e.currentTarget;
+	let liked = link.classList.contains("active");
 	let xhr = new XMLHttpRequest();
 	let params = "?action=like&post_id=" + e.target.getAttribute("data-post-id") + "&liked=" + liked;
 
@@ -234,19 +241,18 @@ function likePost(e) {
 	xhr.send();
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			e.target.classList.toggle("active");
-			let likesNum = parseInt(e.target.nextSibling.textContent);
+			link.classList.toggle("active");
+			let likesNum = parseInt(link.childNodes[2].textContent);
 			likesNum += (liked) ? -1 : 1;
-			e.target.nextSibling.textContent = likesNum.toString();
+			link.childNodes[2].textContent = likesNum.toString();
 		}
 	}
 }
-let likes = document.querySelectorAll(".like");
+let likes = document.querySelectorAll(".post__like[data-post-id]");
 for (let i = likes.length - 1; i >= 0; i--) {
 	likes[i].onclick = likePost;
 }
 
-let commentsContainer = document.querySelector(".post-comment__list");
 function showComments(container) {
 	if (!container) return ;
 	let xhr = new XMLHttpRequest();
@@ -262,6 +268,7 @@ function showComments(container) {
 		}
 	}
 }
+let commentsContainer = document.querySelector(".post-comment__list");
 showComments(commentsContainer);
 
 function commentPost(e) {
@@ -495,7 +502,8 @@ if (elem) elem.onsubmit = (e) => {
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			location.replace(location.origin);
+			if (xhr.responseText !== "Csrf attack!!!")
+				location.replace(location.origin);
 		}
 	}
 };
@@ -579,18 +587,19 @@ function switchOnResizing(elem) {
 		let toResizeStyles = getComputedStyle(toResize);
 		original_width = parseFloat(toResizeStyles.width);
 		original_height = parseFloat(toResizeStyles.height);
-		original_x = parseInt(toResizeStyles.left);
-		original_y = parseInt(toResizeStyles.top);
+		original_x = parseFloat(toResizeStyles.left);
+		original_y = parseFloat(toResizeStyles.top);
 		original_mouse_x = e.pageX;
 		original_mouse_y = e.pageY;
-		window.addEventListener('mousemove', resize);
-		window.addEventListener('mouseup', () => {
+		window.addEventListener("mousemove", resize);
+		window.addEventListener("mouseup", () => {
 			window.removeEventListener("mousemove", resize);
 		});
 	});
 
 	function resize(e) {
-		if (e.target.classList.contains('bottom-right')) {
+		e.preventDefault();
+		if (elem.classList.contains('bottom-right')) {
 			const width = original_width + (e.pageX - original_mouse_x);
 			const height = original_height + (e.pageY - original_mouse_y);
 			if (width > minimum_size) {
@@ -600,7 +609,7 @@ function switchOnResizing(elem) {
 				toResize.style.height = height + 'px'
 			}
 		}
-		else if (e.target.classList.contains('bottom-left')) {
+		else if (elem.classList.contains('bottom-left')) {
 			const height = original_height + (e.pageY - original_mouse_y);
 			const width = original_width - (e.pageX - original_mouse_x);
 			if (height > minimum_size) {
@@ -611,7 +620,7 @@ function switchOnResizing(elem) {
 				toResize.style.left = original_x + (e.pageX - original_mouse_x) + 'px'
 			}
 		}
-		else if (e.target.classList.contains('top-right')) {
+		else if (elem.classList.contains('top-right')) {
 			const width = original_width + (e.pageX - original_mouse_x);
 			const height = original_height - (e.pageY - original_mouse_y);
 			if (width > minimum_size) {
@@ -622,7 +631,7 @@ function switchOnResizing(elem) {
 				toResize.style.top = original_y + (e.pageY - original_mouse_y) + 'px'
 			}
 		}
-		else {
+		else if (elem.classList.contains("top-left")) {
 			const width = original_width - (e.pageX - original_mouse_x);
 			const height = original_height - (e.pageY - original_mouse_y);
 			if (width > minimum_size) {

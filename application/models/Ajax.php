@@ -8,6 +8,8 @@ use PDO;
 class Ajax extends Model {
 
 	public function register($params) {
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
 		$res = [];
 		$res["user_exists"] = $this->usernameExists($params["username"]);
 		$res['email_exists'] = $this->emailExists($params["email"]);
@@ -15,9 +17,13 @@ class Ajax extends Model {
 		if (!$res["user_exists"] && !$res["email_exists"]) {
 			$params["token"] = $this->generateToken(10);
 			$params["pass"] = hash("whirlpool", $params["pass"]);
-			$allowed = array("username", "email", "pass", "token");
-			$sql = "INSERT INTO `users` SET " . $this->db->pdoSet($allowed, $values, $params);
-			$this->db->query($sql, $values);
+			$sql = "INSERT INTO `users` SET username=:user, email=:email, pass=:pass, token=:token";
+			$this->db->query($sql, [
+			    "user" => $params["username"],
+                "email" => $params["email"],
+                "pass" => $params["pass"],
+                "token" => $params["token"]
+            ]);
 			$sql = "SELECT * FROM `users` WHERE username = ?";
 			$user = $this->db->row($sql, [$params["username"]]);
 			$this->sendMail($user, "verify");
@@ -26,6 +32,8 @@ class Ajax extends Model {
 	}
 
 	public function login($params) {
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
 		$res = [];
 		$res["wrong_user"] = !$this->usernameExists($params["username"]);
 		$res["wrong_pass"] = !$this->passwordsEqual($params["username"], $params["pass"]);
@@ -38,6 +46,8 @@ class Ajax extends Model {
 	}
 
 	public function change($params) {
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
 		$res = ["user_exists" => false, "email_exists" => false];
 		$sql = "SELECT * FROM `users` WHERE username = ?";
 		$user = $this->db->row($sql, [$_SESSION["user"]]);
@@ -76,6 +86,8 @@ class Ajax extends Model {
 	}
 
 	public function forget($params) {
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
 		$res = [
 			"wrong_email" => false,
 			"email_confirmed" => true
@@ -117,6 +129,8 @@ class Ajax extends Model {
 	}
 
 	public function addPost($params) {
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
 		$img = $_FILES["img"]["tmp_name"];
 		$filename = $_FILES["img"]["name"];
 		if (!preg_match("#^" . $_SESSION["user"] . "_.*$#", $filename)) {
@@ -126,8 +140,12 @@ class Ajax extends Model {
 		$params["img"] = "img/" . $filename;
 		$params["owner"] = $_SESSION["user"];
 		$sql = "INSERT INTO `posts` SET owner=:owner, title=:title, description=:description, img=:img";
-		$this->db->query($sql, $params);
-		header("Location: /" . BASE_DIR);
+		$this->db->query($sql, [
+		    "owner" => $this->preventXss($params["owner"]),
+		    "title" => $this->preventXss($params["title"]),
+		    "description" => $this->preventXss($params["description"]),
+		    "img" => $params["img"],
+        ]);
 	}
 
 	public function delPost($params) {
@@ -140,27 +158,6 @@ class Ajax extends Model {
 		$this->db->query("DELETE FROM `likes` WHERE post_id=?", [$params["id"]]);
 		$this->db->query("DELETE FROM `comments` WHERE post_id=?", [$params["id"]]);
 		unlink($post["img"]);
-	}
-
-	private function sendMail($user, $opt) {
-		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER["HTTP_HOST"];
-		if ($opt == "verify") {
-			$link .= "?action=verificate&id=" . $user["id"] . "&token=" . $user["token"];
-			$subject = "Confirm your E-mail address";
-			$message = "Hello, " . $user["username"] . "! <br>
-					Thank's for signing up to Camagru!<br>
-					To get started, click the link below to confirm your account.<br>
-					<a href=$link>Confirm your account</a>";
-		} else if ($opt == "change password") {
-			$link .= "?action=forgot&id=" . $user["id"] . "&token=" . $user["token"];
-			$subject = "Change your password";
-			$message = "Hello, " . $user["username"] . "! <br>
-						It seems you have forgotten your password.<br>
-						To create new password, go to this link: <br>
-						<a href=$link>Change your password</a>";
-		}
-		$headers = "Content-Type: text/html; charset=ISO-8859-1\n";
-		mail($user["email"], $subject, $message, $headers);
 	}
 
 	public function like($params) {
@@ -178,17 +175,35 @@ class Ajax extends Model {
 	}
 
 	public function comment($params) {
-		if (!isset($params["post_id"]) || !isset($_SESSION["user"])) {
-			echo "Error";
-			return ;
-		}
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+			exit("Csrf attack!!!");
+		if (!isset($params["post_id"]) || !isset($_SESSION["user"]))
+			exit("Error");
 		$sql = "INSERT INTO `comments` SET owner=:owner, post_id=:post_id, text=:text";
 		$values = [
 			"owner" => $_SESSION["user"],
 			"post_id" => $params["post_id"],
-			"text" => $params["comment"]
+			"text" => $this->preventXss($params["comment"])
 		];
 		$this->db->query($sql, $values);
+
+		$sql = "SELECT owner FROM `posts` WHERE id=?";
+		$postOwner = $this->db->column($sql, [$params["post_id"]]);
+		$sql = "SELECT email, notifications FROM `users` WHERE username=?";
+		$postOwner = $this->db->row($sql, [$postOwner]);
+
+		if ($postOwner["notifications"]) {
+            $link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
+                . "://" . $_SERVER["HTTP_HOST"] . "/post?id=" . $params["post_id"];
+            $headers = "Content-Type: text/html; charset=ISO-8859-1\n";
+            $message = "
+                Hello, " . $_SESSION["user"] . "<br>
+                You recieved a new comment<br>
+                To read it, go via this link:<br>
+                <a href='$link'>Watch new comment</a>
+            ";
+            mail($postOwner["email"], "You recieved a comment on Camagru", $message, $headers);
+        }
 	}
 
 	public function delElem($params) {
@@ -254,7 +269,7 @@ class Ajax extends Model {
 
 	private function usernameExists($username) {
 		$sql = "SELECT id FROM `users` WHERE username = ?";
-		$res = $this->db->row($sql, [$username]);
+		$res = $this->db->column($sql, [$username]);
 		if (!$res) return false;
 		return (!$res ? false : true);
 	}
@@ -262,28 +277,49 @@ class Ajax extends Model {
 
 	private function emailExists($email) {
 		$sql = "SELECT id FROM `users` WHERE email = ?";
-		$res = $this->db->row($sql, [$email]);
+		$res = $this->db->column($sql, [$email]);
 		if (!$res) return false;
 		return (!$res ? false : true);
 	}
 
 	private function passwordsEqual($username, $newpass) {
 		$sql = "SELECT pass FROM `users` WHERE username = ?";
-		$res = $this->db->row($sql, [$username]);
+		$res = $this->db->column($sql, [$username]);
 		if (!$res) return false;
-		return ($res["pass"] == hash("whirlpool", $newpass));
+		return ($res == hash("whirlpool", $newpass));
 	}
 
 	private function emailConfirmed($email, $username) {
 		if ($email) {
 			$sql = "SELECT status FROM `users` WHERE email = ?";
-			$res = $this->db->row($sql, [$email]);
+			$res = $this->db->column($sql, [$email]);
 		} else {
 			$sql = "SELECT status FROM `users` WHERE username = ?";
-			$res = $this->db->row($sql, [$username]);
+			$res = $this->db->column($sql, [$username]);
 		}
 		if (!$res) return false;
-		return ($res["status"] == "confirmed");
+		return ($res == "confirmed");
+	}
+
+	private function sendMail($user, $opt) {
+		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER["HTTP_HOST"];
+		if ($opt == "verify") {
+			$link .= "?action=verificate&id=" . $user["id"] . "&token=" . $user["token"];
+			$subject = "Confirm your E-mail address";
+			$message = "Hello, " . $user["username"] . "! <br>
+					Thank's for signing up to Camagru!<br>
+					To get started, click the link below to confirm your account.<br>
+					<a href=$link>Confirm your account</a>";
+		} else if ($opt == "change password") {
+			$link .= "?action=forgot&id=" . $user["id"] . "&token=" . $user["token"];
+			$subject = "Change your password";
+			$message = "Hello, " . $user["username"] . "! <br>
+						It seems you have forgotten your password.<br>
+						To create new password, go to this link: <br>
+						<a href=$link>Change your password</a>";
+		}
+		$headers = "Content-Type: text/html; charset=ISO-8859-1\n";
+		mail($user["email"], $subject, $message, $headers);
 	}
 
 	private function getComments($post_id) {
@@ -292,6 +328,10 @@ class Ajax extends Model {
 		if (!($res = $response->fetchAll(PDO::FETCH_ASSOC)))
 			return [];
 		return $res;
+	}
+
+	private function preventXss($input, $encoding = 'UTF-8') {
+		return htmlentities($input, ENT_QUOTES | ENT_HTML5, $encoding);
 	}
 
 }

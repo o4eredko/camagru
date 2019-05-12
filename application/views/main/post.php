@@ -11,16 +11,13 @@
 					</div>
 					<div class="post__stat">
                         <?php if (in_array($post["id"], $likedPosts)): ?>
-                            <span class="post__like">
-                            <i class="fa fa-thumbs-up like active" data-post-id="<?= $post["id"] ?>"></i>
-                            <?= $post["likes"] ?>
-                        </span>
+                            <a href="#" class="post__like active" data-post-id="<?= $post["id"] ?>">
                         <?php else: ?>
-                            <span class="post__like">
-                            <i class="fa fa-thumbs-up like" data-post-id="<?= $post["id"] ?>"></i>
-                            <?= $post["likes"] ?>
-                        </span>
+                            <a href="#" class="post__like" data-post-id="<?= $post["id"] ?>">
                         <?php endif; ?>
+                            <i class="fa fa-thumbs-up like active"></i>
+                            <?= $post["likes"] ?>
+                        </a>
                         <span class="post__comment"><i class="fas fa-comment comment"></i><?= $post["comments"] ?></span>
 					</div>
 				</div>
@@ -28,6 +25,7 @@
                     <h3 class="post-page__title">Comments</h3>
                     <div class="post-comment__list"></div>
                     <form class="post-comment__form">
+                        <input type="hidden" name="csrf" value="<?= $_SESSION["csrf"] ?>">
                         <textarea name="comment" placeholder="Comment this post" required></textarea>
                         <button class="button button-transparent">Comment</button>
                     </form>
