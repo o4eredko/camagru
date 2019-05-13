@@ -45,7 +45,7 @@ class Router {
                 View::errorCode(404);
             }
 		} else {
-			header("Location: /");
+			View::errorCode(404);
 		}
 	}
 

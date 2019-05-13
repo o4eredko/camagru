@@ -502,8 +502,7 @@ if (elem) elem.onsubmit = (e) => {
 	xhr.send(data);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			// if (xhr.responseText !== "Csrf attack!!!")
-			// 	location.replace(location.origin);
+			location.replace(location.origin);
 		}
 	}
 };
@@ -541,7 +540,6 @@ function dragImgOnCanvas(e) {
 function appendSticker(e) {
 	let container = document.querySelector(".snapshot__area");
 	let wrapper = document.createElement("div");
-	let copy = document.createElement("img");
 	const resizerPos = [
 		"top-left",
 		"top-right",
@@ -557,10 +555,16 @@ function appendSticker(e) {
 		wrapper.appendChild(elem);
 		switchOnResizing(elem);
 	}
+	elem = document.createElement("div");
+	elem.classList.add("rotator");
+	wrapper.appendChild(elem);
+	switchOnRotation(elem);
+
+	let copy = document.createElement("img");
 	copy.src = e.target.src;
 	copy.alt = e.target.alt;
-	wrapper.onmousedown = dragImgOnCanvas;
 	wrapper.appendChild(copy);
+	wrapper.onmousedown = dragImgOnCanvas;
 	container.appendChild(wrapper);
 }
 
@@ -643,5 +647,30 @@ function switchOnResizing(elem) {
 				toResize.style.top = original_y + (e.pageY - original_mouse_y) + 'px'
 			}
 		}
+	}
+}
+
+function switchOnRotation(elem) {
+	let elemPos = getComputedStyle(elem.parentNode);
+
+	elem.addEventListener("mousedown", (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		window.addEventListener("mousemove", rotate);
+		window.addEventListener("mouseup", () => {
+			window.removeEventListener("mousemove", rotate);
+		});
+	});
+
+	function rotate(e) {
+		e.preventDefault();
+		let center_x = (parseFloat(elemPos.left) + parseFloat(elemPos.right)) / 2,
+			center_y = (parseFloat(elemPos.top) + parseFloat(elemPos.bottom)) / 2,
+			mouse_x = e.pageX - parseFloat(elemPos.left),
+			mouse_y = e.pageY - parseFloat(elemPos.top),
+			radians = Math.atan2(mouse_x - center_x, mouse_y - center_y),
+			degree = Math.round((radians * (180 / Math.PI) * -1) + 100);
+		console.log(center_x, center_y);
+		elem.nextElementSibling.style.transform = "rotate(" + (degree + 170) + "deg)";
 	}
 }

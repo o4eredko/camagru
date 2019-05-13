@@ -6,6 +6,15 @@ use application\core\Controller;
 
 class MainController extends Controller {
 
+	public function __construct($route) {
+		parent::__construct($route);
+		if (version_compare(PHP_VERSION, "7.0.0", ">=")) {
+			$_SESSION["csrf"] = bin2hex(random_bytes(32));
+		} else {
+			$_SESSION["csrf"] = bin2hex(openssl_random_pseudo_bytes(32));
+		}
+	}
+
 	public function indexAction() {
         $data = $this->model->getUserData();
         $data["posts"] = $this->model->getPosts();

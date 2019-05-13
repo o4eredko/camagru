@@ -5,7 +5,7 @@ body, ul, li, p, h1, h2, h3 {
 
 body {
 	font-family: 'HelveticaNeueCyr';
-	min-height: calc(100vh - 75px);
+	min-height: 100vh;
 	padding: 75px 0;
 	position: relative;
 }
@@ -446,6 +446,7 @@ header a {
 	align-items: center;
 	height: 150px;
 	margin-bottom: 10px;
+	overflow-x: scroll;
 }
 
 .snapshot__area {
@@ -463,8 +464,29 @@ header a {
 	position: absolute;
 	top: 0;
 	left: 0;
-	border: 2px solid #fff;
+	border: 2px solid transparent;
 	box-sizing: border-box;
+	z-index: 2;
+	cursor: move;
+}
+
+.rotator {
+	display: block;
+	position: absolute;
+	top: -15%;
+	bottom: -15%;
+	left: -15%;
+	right: -15%;
+	z-index: -1;
+	cursor: alias;
+}
+
+.dragImg:hover {
+	border-color: #fff;
+}
+
+.dragImg:hover .resizer {
+	display: block;
 }
 
 .resizer {
@@ -473,28 +495,32 @@ header a {
 	height: 12px;
 	border-radius: 100%;
 	background-color: #ff6767;
-	cursor: pointer;
 	z-index: 999;
+	display: none;
 }
 
 .resizer.top-left {
 	top: -6px;
 	left: -6px;
+	cursor: nwse-resize
 }
 
 .resizer.top-right {
 	top: -6px;
 	right: -6px;
+	cursor: nesw-resize;
 }
 
 .resizer.bottom-left {
 	bottom: -6px;
 	left: -6px;
+	cursor: nesw-resize;
 }
 
 .resizer.bottom-right {
 	bottom: -6px;
 	right: -6px;
+	cursor: nwse-resize
 }
 
 .dragImg img {
