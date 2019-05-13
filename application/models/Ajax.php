@@ -73,10 +73,10 @@ class Ajax extends Model {
 				"email" => $params["newemail"],
 				"pass" => hash("whirlpool", $params["pass"]),
 				"status" => $params["status"],
+                "token" => $user["token"],
 				"id" => $user["id"],
-                "notif" => isset($params["notifications"])
+                "notif" => isset($params["notifications"]) ? 1 : 0
 			];
-			$values["token"] = $user["token"];
 			$this->db->query($sql, $values);
 			$_SESSION["user"] = $params["newuser"];
 			if ($values["status"] == "unconfirmed")
@@ -93,8 +93,8 @@ class Ajax extends Model {
 			"email_confirmed" => true
 		];
 		if (!empty($params["email"])) {
-			$sql = "SELECT * FROM `users` WHERE email=:email";
-			$user = $this->db->row($sql, $params);
+			$sql = "SELECT * FROM `users` WHERE email=?";
+			$user = $this->db->row($sql, [$params["email"]]);
 			$res["wrong_email"] = !$user;
 			$res["email_confirmed"] = ($user && $user["status"] == "confirmed");
 
@@ -106,7 +106,7 @@ class Ajax extends Model {
 			$sql = "UPDATE `users` SET pass=:pass WHERE id=:id";
 			$this->db->query($sql, [
 				"pass" => hash("whirlpool", $params["pass"]),
-				"id" => $params["id"],
+				"id" => $params["id"]
 			]);
 		}
 		echo json_encode($res);
@@ -188,11 +188,10 @@ class Ajax extends Model {
 		$this->db->query($sql, $values);
 
 		$sql = "SELECT owner FROM `posts` WHERE id=?";
-		$postOwner = $this->db->column($sql, [$params["post_id"]]);
+		$username = $this->db->column($sql, [$params["post_id"]]);
 		$sql = "SELECT email, notifications FROM `users` WHERE username=?";
-		$postOwner = $this->db->row($sql, [$postOwner]);
-
-		if ($postOwner["notifications"]) {
+		$postOwner = $this->db->row($sql, [$username]);
+		if ($_SESSION["user"] != $username && $postOwner["notifications"]) {
             $link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
                 . "://" . $_SERVER["HTTP_HOST"] . "/post?id=" . $params["post_id"];
             $headers = "Content-Type: text/html; charset=ISO-8859-1\n";

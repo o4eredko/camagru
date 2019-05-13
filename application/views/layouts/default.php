@@ -28,8 +28,7 @@
                     </nav>
                 </div>
                 <div class="col-3 d-flex justify-content-end account">
-                    <?php
-                    if (empty($_SESSION["user"])): ?>
+                    <?php if (empty($_SESSION["user"])): ?>
                         <a href="#" data-toggle-id="login" class="button account__buttons login__button"><i class="fas fa-user-alt"></i>Log in</a>
                         <a href="#" data-toggle-id="registration" class="button account__buttons signup__button"><i class="fas fa-lock"></i>Sign up</a>
                     <?php else: ?>

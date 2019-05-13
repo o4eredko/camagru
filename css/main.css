@@ -444,7 +444,6 @@ header a {
 .sticker__container {
 	display: flex;
 	align-items: center;
-	height: 150px;
 	margin-bottom: 10px;
 	overflow-x: scroll;
 }
@@ -455,8 +454,20 @@ header a {
 }
 
 .sticker {
-	max-width: 140px;
+	max-width: 80px;
 	cursor: pointer;
+}
+
+.addSticker {
+	margin-left: 30px;
+	margin-top: 0;
+	font-size: 40px;
+	color: #0d58c8;
+	cursor: pointer;
+}
+
+.addSticker input {
+	display: none;
 }
 
 .dragImg {
@@ -489,13 +500,27 @@ header a {
 	display: block;
 }
 
+.dragImg .removeSticker {
+	position: absolute;
+	top: -20%;
+	right: -20%;
+	color: #fff;
+	font-size: 13px;
+	z-index: 4;
+	cursor: pointer;
+}
+
+.dragImg .removeSticker:hover {
+	color: #ff6767;
+}
+
 .resizer {
 	position: absolute;
 	width: 12px;
 	height: 12px;
 	border-radius: 100%;
 	background-color: #ff6767;
-	z-index: 999;
+	z-index: 3;
 	display: none;
 }
 

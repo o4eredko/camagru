@@ -565,12 +565,43 @@ function appendSticker(e) {
 	copy.alt = e.target.alt;
 	wrapper.appendChild(copy);
 	wrapper.onmousedown = dragImgOnCanvas;
+
+	elem = document.createElement("i");
+	elem.classList.add("removeSticker", "fas", "fa-times");
+	wrapper.appendChild(elem);
+	elem.onclick = () => {
+		elem.parentNode.parentNode.removeChild(elem.parentNode);
+	};
 	container.appendChild(wrapper);
 }
 
 elem = document.querySelectorAll(".sticker");
 for (let i = elem.length - 1; i >= 0; i--) {
 	elem[i].onclick = appendSticker;
+}
+
+elem = document.querySelector(".addSticker");
+if (elem) {
+	let i = 0;
+	function handleStickerDrop(e) {
+		let dt = e.dataTransfer;
+		let files = dt.files;
+		console.log(files);
+	}
+
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		elem.addEventListener(eventName, (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+		}, false)
+	});
+	['dragenter', 'dragover'].forEach(eventName => {
+		elem.addEventListener(eventName, dragOver, false)
+	});
+	['dragleave', 'drop'].forEach(eventName => {
+		elem.addEventListener(eventName, dragLeave, false)
+	});
+	elem.addEventListener('drop', handleStickerDrop, false);
 }
 
 /*-----------------Resize Sticker-----------------*/
