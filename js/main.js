@@ -379,13 +379,68 @@ pagination(document.querySelector(".slider"), {
 
 /*-----------------Camera-----------------*/
 
+function showSnaphots(container) {
+	let xhr = new XMLHttpRequest();
+	xhr.open("GET", "ajax?action=showSnapshots", true);
+	xhr.send();
+	xhr.onreadystatechange = () => {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			container.innerHTML = xhr.responseText;
+			elem = document.querySelectorAll(".snapshot .upload");
+			for (let i = elem.length - 1; i >= 0; i--)
+				elem[i].onclick = uploadSnapshot;
+			elem =  document.querySelectorAll(".snapshots .remove");
+			for (let i = elem.length - 1; i >= 0; i--)
+				elem[i].onclick = delSnapshot;
+			elem = document.querySelectorAll(".snapshots canvas");
+			for (let i = elem.length - 1; i >= 0; i--) {
+				let img = new Image();
+				img.src = elem[i].getAttribute("data-src");
+				elem[i].getContext("2d").drawImage(img, 0, 0);
+			}
+		}
+	}
+}
+let snapshotContainer = document.querySelector(".snapshots");
+if (snapshotContainer) {
+	showSnaphots(snapshotContainer);
+}
+
+function uploadSnapshot(e) {
+	e.preventDefault();
+	let img = e.target.parentNode.firstElementChild;
+	let canvas = document.createElement("canvas");
+
+	document.body.appendChild(canvas);
+	canvas.width = img.naturalWidth;
+	canvas.height = img.naturalHeight;
+	canvas.getContext("2d").drawImage(img, 0, 0);
+	canvas.toBlob((blob) => {
+		addPhoto(blob, img.src);
+	});
+	canvas.parentNode.removeChild(canvas);
+}
+function delSnapshot(e) {
+	e.preventDefault();
+	let id = e.target.getAttribute("data-remove-id");
+	let csrf = e.target.getAttribute("data-csrf");
+	let xhr = new XMLHttpRequest();
+
+	xhr.open("GET", "ajax?action=delElem&where=snapshots&id=" + id + "&csrf=" + csrf, true);
+	xhr.send();
+	xhr.onreadystatechange = () => {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			showSnaphots(snapshotContainer);
+		}
+	}
+}
+
 const camSupported = "mediaDevices" in navigator;
 const cam = document.getElementById("cam");
 if (camSupported && cam) {
 	const snapshot = document.getElementById("snapshot");
 	const context = snapshot.getContext("2d");
 	const snapButton = document.getElementById("snap-button");
-	let playVideo = true;
 
 	navigator.mediaDevices.getUserMedia({video: true})
 	.then((stream) => {
@@ -396,10 +451,8 @@ if (camSupported && cam) {
 			snapshot.width = parseInt(camStyles.width);
 			cam.hidden = true;
 			function step() {
-				if (playVideo) {
-					context.drawImage(cam, 0, 0);
-					requestAnimationFrame(step);
-				}
+				context.drawImage(cam, 0, 0);
+				requestAnimationFrame(step);
 			}
 			requestAnimationFrame(step);
 		});
@@ -410,17 +463,18 @@ if (camSupported && cam) {
 		let overlaysToUpload = [];
 		let data = new FormData;
 		let xhr = new XMLHttpRequest();
-		playVideo = false;
 
 		for (let i = overlays.length - 1; i >= 0; i--) {
-			const elemStyles = getComputedStyle(overlays[i].parentNode);
+			const imgPos = overlays[i].getBoundingClientRect();
+			const containerPos = overlays[i].parentElement.parentElement.getBoundingClientRect();
 			overlays[i].onmousedown = null;
 			overlaysToUpload.push({
 				"src": overlays[i].src,
-				"posX": parseInt(elemStyles.left),
-				"posY": parseInt(elemStyles.top),
-				"width": parseInt(elemStyles.width),
-				"height": parseInt(elemStyles.height)
+				"posX": imgPos.left - containerPos.left,
+				"posY": imgPos.top - containerPos.top,
+				"width": imgPos.width,
+				"height": imgPos.height,
+				"rotation": parseFloat(overlays[i].style.transform.split("(")[1])
 			});
 			overlays[i].parentNode.parentNode.removeChild(overlays[i].parentNode);
 		}
@@ -430,14 +484,7 @@ if (camSupported && cam) {
 		xhr.send(data);
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState === 4 && xhr.status === 200) {
-				let img = new Image();
-				img.src = xhr.responseText;
-				img.onload = () => {
-					context.drawImage(img, 0, 0, snapshot.width, snapshot.height);
-					snapshot.toBlob((blob) => {
-						addPhoto(blob, img.src)
-					}, "image/jpeg", 1);
-				};
+				showSnaphots(snapshotContainer);
 			}
 		}
 	};
@@ -569,9 +616,9 @@ function appendSticker(e) {
 	elem = document.createElement("i");
 	elem.classList.add("removeSticker", "fas", "fa-times");
 	wrapper.appendChild(elem);
-	elem.onclick = () => {
-		elem.parentNode.parentNode.removeChild(elem.parentNode);
-	};
+	elem.addEventListener("click", (e) => {
+		e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+	});
 	container.appendChild(wrapper);
 }
 
@@ -582,7 +629,6 @@ for (let i = elem.length - 1; i >= 0; i--) {
 
 elem = document.querySelector(".addSticker");
 if (elem) {
-	let i = 0;
 	function handleStickerDrop(e) {
 		let dt = e.dataTransfer;
 		let files = dt.files;
@@ -682,11 +728,13 @@ function switchOnResizing(elem) {
 }
 
 function switchOnRotation(elem) {
-	let elemPos = getComputedStyle(elem.parentNode);
+	let orig_x, orig_y;
 
 	elem.addEventListener("mousedown", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
+		orig_x = e.pageX;
+		orig_y = e.pageY;
 		window.addEventListener("mousemove", rotate);
 		window.addEventListener("mouseup", () => {
 			window.removeEventListener("mousemove", rotate);
@@ -694,6 +742,7 @@ function switchOnRotation(elem) {
 	});
 
 	function rotate(e) {
+		let elemPos = getComputedStyle(elem.parentNode);
 		e.preventDefault();
 		let center_x = (parseFloat(elemPos.left) + parseFloat(elemPos.right)) / 2,
 			center_y = (parseFloat(elemPos.top) + parseFloat(elemPos.bottom)) / 2,
@@ -701,7 +750,6 @@ function switchOnRotation(elem) {
 			mouse_y = e.pageY - parseFloat(elemPos.top),
 			radians = Math.atan2(mouse_x - center_x, mouse_y - center_y),
 			degree = Math.round((radians * (180 / Math.PI) * -1) + 100);
-		console.log(center_x, center_y);
 		elem.nextElementSibling.style.transform = "rotate(" + (degree + 170) + "deg)";
 	}
 }

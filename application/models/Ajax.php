@@ -208,6 +208,8 @@ class Ajax extends Model {
 	public function delElem($params) {
 		if (!isset($params["id"]))
 			exit("Error");
+		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+		    exit("Csrf attack");
 		$table = $params["where"];
 		$sql = "DELETE FROM $table WHERE id=?";
 		$this->db->query($sql, [$params["id"]]);
@@ -230,7 +232,7 @@ class Ajax extends Model {
 	}
 
 	public function snapshot($params) {
-	    if (!isset($params["img"]))
+	    if (!isset($_SESSION["user"]) || !isset($params["img"]))
 	        exit("No image");
 		$srcImg = $params["img"];
 		$srcImg = str_replace('data:image/png;base64,', '', $srcImg);
@@ -243,17 +245,34 @@ class Ajax extends Model {
 		imagecopyresampled($out, $bg, 0, 0, 0, 0, $width, $height, $width, $height);
 		$overlays = json_decode($params["overlays"]);
 		foreach ($overlays as $overlay) {
-			$img = imagecreatefrompng($overlay->src);
-			$posX = $overlay->posX;
-			$posY = $overlay->posY;
-			$width = $overlay->width;
-			$height = $overlay->height;
-			$img = imagescale($img, $width, $height);
-			imagecopyresampled($out, $img, $posX, $posY, 0, 0, $width, $height, $width, $height);
+			$destimg = imagecreatefrompng($overlay->src);
+			$transColor = imagecolorallocatealpha($destimg, 255, 255, 255, 127);
+			$rotatedImage = imagerotate($destimg, -$overlay->rotation, $transColor);
+			imagesavealpha($rotatedImage, true);
+			$rotatedImage = imagescale($rotatedImage, $overlay->width, $overlay->height);
+			imagecopyresampled($out, $rotatedImage, $overlay->posX, $overlay->posY, 0, 0,
+				$overlay->width, $overlay->height, $overlay->width, $overlay->height);
 		}
 		$imgName = "img/" . $_SESSION["user"] ."_" . $this->generateToken(8) . ".jpg";
 		imagejpeg($out, $imgName, 100);
-		echo $imgName;
+		$sql = "INSERT INTO `snapshots` SET owner=?, img=?";
+		$this->db->query($sql, [$_SESSION["user"], $imgName]);
+    }
+
+    public function showSnapshots() {
+	    if (!isset($_SESSION["user"]))
+	        exit;
+	    $sql = "SELECT id, img FROM `snapshots` WHERE owner=?";
+	    $response = $this->db->query($sql, [$_SESSION["user"]]);
+	    while (($snap = $response->fetch(PDO::FETCH_ASSOC))): ?>
+        <div class="snapshot">
+            <img src="<?= $snap["img"] ?>" alt="Camagru">
+            <a href="#" class="upload button button-transparent"><i class="fas fa-cloud-upload-alt"></i>Upload snapshot</a>
+            <a href="#" class="remove button button-transparent" data-remove-id="<?= $snap["id"] ?>" data-csrf="<?= $_SESSION["csrf"] ?>">
+                <i class="fas fa-times"></i>Delete snapshot
+            </a>
+        </div>
+        <?php endwhile;
     }
 
 	private function generateToken($length = 10) {

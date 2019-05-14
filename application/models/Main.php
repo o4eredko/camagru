@@ -17,6 +17,8 @@ class Main extends Model {
 			$sql = "SELECT username, email, pass, notifications FROM `users` WHERE username=?";
 			$response = $this->db->query($sql, [$_SESSION["user"]]);
 			$res = $response->fetch(PDO::FETCH_ASSOC);
+			$res["username"] = $this->preventXss($res["username"]);
+			$res["email"] = $this->preventXss($res["email"]);
 			return $res;
 		}
 		return [];
@@ -70,6 +72,10 @@ class Main extends Model {
 		$post["likes"] = $this->getLikesNum($post["id"]);
 		$post["comments"] = $this->getCommentsNum($post["id"]);
 		return $post;
+	}
+
+	private function preventXss($input, $encoding = 'UTF-8') {
+		return htmlentities($input, ENT_QUOTES | ENT_HTML5, $encoding);
 	}
 
 }
