@@ -30,5 +30,9 @@ return [
 	"ajax" => [
 		"controller" => "ajax",
 		"action" => "request"
+	],
+	"setup" => [
+		"controller" => "main",
+		"action" => "setup"
 	]
 ];
