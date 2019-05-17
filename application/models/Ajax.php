@@ -224,7 +224,10 @@ class Ajax extends Model {
 				<h4 class="post-comment__owner"><?= $comment["owner"] ?></h4>
 				<p class="post-comment__text"><?= $comment["text"] ?></p>
 				<?php if ($comment["owner"] == $_SESSION["user"]): ?>
-					<i class="fas fa-trash-alt post-comment__del" data-comment-id="<?= $comment["id"] ?>"></i>
+					<i class="fas fa-trash-alt post-comment__del"
+                       data-comment-id="<?= $comment["id"] ?>"
+                       data-csrf="<?= $_SESSION["csrf"] ?>">
+                    </i>
 				<?php endif; ?>
 			</div>
 		</div>

@@ -296,7 +296,9 @@ elem = document.querySelector(".post-comment__form");
 if (elem) elem.onsubmit = commentPost;
 
 function delComment(e) {
-	let params = "?action=delElem&where=comments&id=" + e.target.getAttribute("data-comment-id");
+	let csrf = e.target.getAttribute("data-csrf");
+	let params = "?action=delElem&where=comments&id=" + e.target.getAttribute("data-comment-id") +
+		"&csrf=" + csrf;
 	let xhr = new XMLHttpRequest();
 	xhr.open("GET", "ajax" + params, true);
 	xhr.send();
