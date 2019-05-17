@@ -128,6 +128,15 @@ class Ajax extends Model {
 		}
 	}
 
+	public function userInfo($params) {
+	    if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
+	        exit("Csrf attack!!!");
+	    $res = [
+	        "user_exists" => $this->usernameExists($params["username"])
+        ];
+	    echo json_encode($res);
+    }
+
 	public function addPost($params) {
 		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
 			exit("Csrf attack!!!");
@@ -162,16 +171,13 @@ class Ajax extends Model {
 
 	public function like($params) {
 		if (!isset($params["post_id"]) || !isset($_SESSION["user"]) || !isset($params["liked"])) {
-			echo "Error";
-			return ;
+			exit("Error");
 		}
-		if ($params["liked"] == "true") {
-			$sql = "DELETE FROM `likes` WHERE owner=? AND post_id=?";
-			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
-		} else {
-			$sql = "INSERT INTO `likes` SET owner=?, post_id=?";
-			$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
-		}
+		if ($params["liked"] == "true")
+		    $sql = "DELETE FROM `likes` WHERE owner=? AND post_id=?";
+		else
+		    $sql = "INSERT INTO `likes` SET owner=?, post_id=?";
+		$this->db->query($sql, [$_SESSION["user"], $params["post_id"]]);
 	}
 
 	public function comment($params) {

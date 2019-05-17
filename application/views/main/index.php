@@ -15,8 +15,8 @@
             <?php foreach ($posts as $post): ?>
             <div class="col-md-3 col-12">
                 <div class="post" data-id="<?= $post["id"] ?>">
-                    <a href="post?id=<?= $post["id"] ?>">
-                        <img src="<?= $post["img"] ?>" alt="" class="post__img">
+                    <a href="post?id=<?= $post["id"] ?>" class="post__img">
+                        <img src="<?= $post["img"] ?>" alt="">
                     </a>
                     <div class="post__content">
                         <h4 class="post__title"><?= $post["title"] ?></h4>

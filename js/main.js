@@ -1,4 +1,5 @@
 /*-----------------Events-----------------*/
+let elem;
 
 document.onclick = function(event) {
 	let id = this.activeElement.getAttribute("data-toggle-id");
@@ -173,15 +174,30 @@ function sendForgotForm(e) {
 	}
 }
 
-var elem;
-if ((elem = document.getElementById("registrationForm")))
-	elem.onsubmit = sendRegistrationForm;
-if ((elem = document.getElementById("loginForm")))
-	elem.onsubmit = sendLoginForm;
-if ((elem = document.getElementById("changeForm")))
-	elem.onsubmit = sendChangeForm;
-if ((elem = document.getElementById("forgotForm")))
-	elem.onsubmit = sendForgotForm;
+function sendUserSettingsForm(e) {
+	e.preventDefault();
+	let labels = getLabels(e.target);
+	let data = new FormData(e.target);
+	let xhr = new XMLHttpRequest();
+
+	data.append("action", "userInfo");
+	xhr.open("POST", "ajax", true);
+	xhr.send(data);
+	xhr.onreadystatechange = () => {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			console.log("ZAEBUMBA");
+			location.reload();
+		}
+	}
+}
+
+["registrationForm", "loginForm", "changeForm", "forgotForm", "userSettingsForm"].forEach(formName => {
+	elem = document.getElementById(formName);
+	if (elem) {
+		let func = "send" + formName[0].toUpperCase() + formName.slice(1);
+		elem.onsubmit = window[func];
+	}
+});
 
 /*-----------------GET-----------------*/
 

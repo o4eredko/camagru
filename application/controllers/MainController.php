@@ -1,6 +1,5 @@
 <?php
 
-
 namespace application\controllers;
 use application\core\Controller;
 
@@ -52,7 +51,7 @@ class MainController extends Controller {
     	if (!isset($_SESSION["user"]))
     		header("Location: /");
     	$data = $this->model->getUserData();
-    	$data["posts"] = $this->model->getPosts();
+    	$data["posts"] = $this->model->getPosts($_SESSION["user"]);
 		$data["likedPosts"] = $this->model->getLikedPosts();
 		$this->view->render($data);
 	}

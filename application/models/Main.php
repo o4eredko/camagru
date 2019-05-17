@@ -25,8 +25,12 @@ class Main extends Model {
 		return [];
 	}
 
-	public function getPosts() {
-		$response = $this->pdo->query("SELECT * FROM `posts` ORDER BY creation_date DESC");
+	public function getPosts($username = null) {
+		if ($username) {
+			$response = $this->db->query("SELECT * FROM `posts` WHERE owner=? ORDER BY creation_date DESC", [$username]);
+		} else {
+			$response = $this->pdo->query("SELECT * FROM `posts` ORDER BY creation_date DESC");
+		}
 		$posts = $response->fetchAll(PDO::FETCH_ASSOC);
 		for ($i = 0; $i < count($posts); $i++) {
 			$posts[$i]["likes"] = $this->getLikesNum($posts[$i]["id"]);
