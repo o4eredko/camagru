@@ -7,6 +7,7 @@
  */
 
 namespace application\models;
+
 use application\core\Model;
 use PDO;
 
@@ -72,6 +73,21 @@ class Main extends Model {
 		$post["likes"] = $this->getLikesNum($post["id"]);
 		$post["comments"] = $this->getCommentsNum($post["id"]);
 		return $post;
+	}
+
+	public function setupDatabase() {
+		$tmpline = "";
+		$lines = file("application/config/camagru.sql");
+		foreach ($lines as $line) {
+			if (substr($line, 0, 2) == '--' || $line == '')
+				continue;
+			$tmpline .= $line;
+			if (substr(trim($line), -1, 1) == ';') {
+				$this->pdo->exec($tmpline) or print('Error performing query \'<strong>' . $tmpline . '\': <br /><br />');
+				$tmpline = "";
+			}
+		}
+		echo "Tables imported successfully";
 	}
 
 	private function preventXss($input, $encoding = 'UTF-8') {

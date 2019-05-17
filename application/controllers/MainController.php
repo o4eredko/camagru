@@ -57,4 +57,8 @@ class MainController extends Controller {
 		$this->view->render($data);
 	}
 
+	public function setupAction() {
+		$this->model->setupDatabase();
+	}
+
 }
