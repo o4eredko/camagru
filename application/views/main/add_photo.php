@@ -1,7 +1,7 @@
 <section id="add_photo">
 	<div class="container">
-		<div class="row">
-            <div class="col-7">
+		<div class="row justify-content-center">
+            <div class="col-12 col-lg-7">
                 <div class="row flex-column">
                     <div class="col">
                         <h3 class="add_photo__title">Grab a snapshot</h3>
@@ -37,7 +37,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-5">
+            <div class="col-12 col-md-10 col-lg-5">
                 <div class="thumbnails info__block">
                     <h3 class="add_photo__title">Previous snapshots</h3>
                     <div class="snapshots d-flex flex-column-reverse"></div>

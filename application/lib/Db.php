@@ -15,7 +15,6 @@ class Db {
 			$this->pdo->query("CREATE DATABASE IF NOT EXISTS $DB_NAME")
 				or die(print_r($this->pdo->errorInfo(), true));
 			$this->pdo->exec("use $DB_NAME");
-
 		} catch (PDOException $e) {
 			die("DB ERROR: ". $e->getMessage());
 		}

@@ -4,7 +4,7 @@
 namespace application\core;
 use application\lib\Db;
 
-abstract class Model {
+class Model {
 
     protected $db;
     protected $pdo;

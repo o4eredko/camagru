@@ -76,7 +76,8 @@ a, button, label {
 }
 
 .img-round {
-	max-width: 50px;
+	max-width: 60px;
+	height: 60px;
 	border-radius: 100%;
 }
 
@@ -120,6 +121,11 @@ header a {
 	color: #0d58c8;
 }
 
+.hamburger {
+	color: white;
+	font-size: 15px;
+}
+
 .main-menu__list {
 	display: -webkit-flex;
 	display: -moz-flex;
@@ -128,6 +134,18 @@ header a {
 	display: flex;
 	justify-content: center;
 	font-size: 14px;
+}
+
+#switch-menu.active {
+	display: flex!important;
+	position: fixed;
+	padding: 0;
+	left: 0;
+	top: 75px;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	background-color: rgba(255, 255, 255, 0.3);
 }
 
 .main-menu__item a {
@@ -313,6 +331,7 @@ header a {
 .slider {
 	position: relative;
 	overflow: hidden;
+	margin-bottom: 30px;
 }
 
 .slide {
@@ -853,9 +872,10 @@ input:checked + .switch__toggle:before {
 	text-align: center;
 	border-radius: 8px;
 	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+	margin-bottom: 30px;
 }
 
-.user input, .user textarea {
+.user input, .user textarea, .user p {
 	-webkit-transition: .15s ease-out all;
 	-moz-transition: .15s ease-out all;
 	-ms-transition: .15s ease-out all;
@@ -872,10 +892,19 @@ input:checked + .switch__toggle:before {
 	border-radius: 4px;
 }
 
+.user p {
+	border: none
+}
+
 .user textarea {
 	height: 100px;
 	resize: none;
+	outline: none;
 	width: 100%;
+}
+
+.user input[type="file"] {
+	opacity: 0;
 }
 
 .user input:focus, .user textarea:focus {
@@ -888,10 +917,72 @@ input:checked + .switch__toggle:before {
 }
 
 .user__avatar {
-	width: 50px;
-	height: 50px;
+	width: 60px;
+	height: 60px;
 	display: block;
 	text-align: center;
-	cursor: pointer;
 	margin: 0 auto;
+	border-radius: 100%;
+}
+
+@media screen and (max-width: 968px) {
+	.main-menu {
+		background-color: #1b212c;
+		width: 100%;
+		height: 40%;
+		padding-top: 30px;
+	}
+	.main-menu__list {
+		flex-direction: column;
+		align-items: center;
+	}
+	.main-menu__item {
+		width: 100%;
+		text-align: center;
+		border-top: 1px solid #111a36;
+		line-height: 60px;
+	}
+	.main-menu__item:last-child {
+		border-bottom: 1px solid #111a36;
+	}
+	.thumbnails {
+		margin-bottom: 30px;
+	}
+}
+
+@media screen and (max-width: 768px) {
+	.post-page {
+		margin-top: 30px;
+	}
+	.post-page__content {
+		padding: 0;
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.logo {
+		font-size: 15px;
+	}
+	.account__buttons {
+		font-size: 0;
+		padding: 7px;
+		margin: 0 5px;
+	}
+	.account__buttons i {
+		margin-right: 0;
+	}
+	footer {
+		line-height: 40px;
+	}
+	.modal__form h3 {
+		font-size: 15px;
+	}
+	.modal__form .button {
+		font-size: 12px;
+		padding: 10px 30px;
+	}
+	.snapshot .button {
+		display: block;
+		margin: 10px 0;
+	}
 }

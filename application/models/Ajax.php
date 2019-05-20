@@ -3,6 +3,7 @@
 
 namespace application\models;
 use application\core\Model;
+use application\core\View;
 use PDO;
 
 class Ajax extends Model {
@@ -128,12 +129,37 @@ class Ajax extends Model {
 		}
 	}
 
-	public function userInfo($params) {
+	public function changeUserInfo($params) {
 	    if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
 	        exit("Csrf attack!!!");
-	    $res = [
-	        "user_exists" => $this->usernameExists($params["username"])
-        ];
+	    $res = ["user_exists" => false];
+	    if (!empty($_FILES["avatar"]["name"])) {
+			$avatar = $_FILES["avatar"]["tmp_name"];
+			$filename = $_FILES["avatar"]["name"];
+			if (!preg_match("#^" . $_SESSION["user"] . "_.*$#", $filename))
+				$filename = $_SESSION["user"] . "_" . $filename;
+			move_uploaded_file($avatar, "img/" . $filename);
+		}
+	    $user = $this->db->row("SELECT * FROM `users` WHERE username=?", [$_SESSION["user"]]);
+	    if ($user["username"] != $params["username"])
+	    	$res["user_exists"] = $this->usernameExists($params["username"]);
+
+	    if (!$res["user_exists"]) {
+	    	$settedValues = "SET username=:username, info=:info, about=:about";
+	    	$values = [
+				"id" => $user["id"],
+				"username" => $params["username"],
+				"info" => $params["info"],
+				"about" => $params["about"]
+			];
+	    	if (isset($filename)) {
+				$settedValues .= ", avatar=:avatar";
+				$values["avatar"] = "img/$filename";
+			}
+			$sql = "UPDATE `users` $settedValues WHERE id=:id";
+			$this->db->query($sql, $values);
+	    	$_SESSION["user"] = $params["username"];
+		}
 	    echo json_encode($res);
     }
 
@@ -212,11 +238,15 @@ class Ajax extends Model {
 	}
 
 	public function delElem($params) {
-		if (!isset($params["id"]))
+		if (!isset($params["id"]) || !isset($params["where"]))
 			exit("Error");
 		if (!isset($params["csrf"]) || !hash_equals($params["csrf"], $_SESSION["csrf"]))
 		    exit("Csrf attack");
-		$table = $params["where"];
+		$table = "`".str_replace("`","``", $params["where"])."`";
+		$sql = "SELECT owner FROM $table WHERE id=?";
+		$elem = $this->db->column($sql, [$params["id"]]);
+		if ($elem != $_SESSION["user"])
+			View::errorCode(404);
 		$sql = "DELETE FROM $table WHERE id=?";
 		$this->db->query($sql, [$params["id"]]);
 	}
@@ -224,8 +254,9 @@ class Ajax extends Model {
 	public function showComments($params) {
 		$comments = $this->getComments($params["post_id"]);
 		foreach ($comments as $comment): ?>
+		<?php $avatar = $this->db->column("SELECT avatar FROM `users` WHERE username=?", [$comment["owner"]]); ?>
 		<div class="post-comment__item">
-			<img class="img-round" src="img/profile.png" alt="Camagru image">
+			<img class="img-round" src="<?= $avatar ?>" alt="Camagru image">
 			<div class="d-flex flex-column post-comment__block">
 				<h4 class="post-comment__owner"><?= $comment["owner"] ?></h4>
 				<p class="post-comment__text"><?= $comment["text"] ?></p>

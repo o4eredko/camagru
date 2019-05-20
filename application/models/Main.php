@@ -15,10 +15,12 @@ class Main extends Model {
 
 	public function getUserData() {
 		if (!empty($_SESSION["user"])) {
-			$sql = "SELECT username, email, pass, notifications FROM `users` WHERE username=?";
+			$sql = "SELECT * FROM `users` WHERE username=?";
 			$response = $this->db->query($sql, [$_SESSION["user"]]);
 			$res = $response->fetch(PDO::FETCH_ASSOC);
 			$res["username"] = $this->preventXss($res["username"]);
+			$res["info"] = $this->preventXss($res["info"]);
+			$res["about"] = $this->preventXss($res["about"]);
 			$res["email"] = $this->preventXss($res["email"]);
 			return $res;
 		}
@@ -87,11 +89,12 @@ class Main extends Model {
 				continue;
 			$tmpline .= $line;
 			if (substr(trim($line), -1, 1) == ';') {
-				$this->pdo->exec($tmpline) or print('Error performing query \'<strong>' . $tmpline . '\': <br /><br />');
+				$this->pdo->exec($tmpline);
 				$tmpline = "";
 			}
 		}
 		echo "Tables imported successfully";
+		header("Location: /");
 	}
 
 	private function preventXss($input, $encoding = 'UTF-8') {

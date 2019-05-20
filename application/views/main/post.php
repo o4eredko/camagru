@@ -1,8 +1,16 @@
 <section id="post">
 	<div class="container">
-		<div class="row">
-			<div class="col-5"></div>
-			<div class="col-7">
+		<div class="row justify-content-between">
+			<div class="col-md-4">
+				<div class="user">
+					<h4>Your profile</h4>
+					<img src="<?= $avatar ?>" class="user__avatar">
+					<p><?= $username ?></p>
+					<p><?= $info ?></p>
+					<p><?= $about ?></p>
+				</div>
+			</div>
+			<div class="col-md-8 col-lg-7">
 				<div class="info__block post-page">
 					<h3 class="post-page__title"><?= $post["title"] ?></h3>
 					<div class="post-page__content">
@@ -10,11 +18,11 @@
 						<img class="post-page__image" src="<?= $post["img"] ?>" alt="Camagru Image">
 					</div>
 					<div class="post__stat">
-                        <?php if (in_array($post["id"], $likedPosts)): ?>
-                            <a href="#" class="post__like active" data-post-id="<?= $post["id"] ?>">
-                        <?php else: ?>
-                            <a href="#" class="post__like" data-post-id="<?= $post["id"] ?>">
-                        <?php endif; ?>
+					<?php if (in_array($post["id"], $likedPosts)): ?>
+						<a href="#" class="post__like active" data-post-id="<?= $post["id"] ?>">
+					<?php else: ?>
+						<a href="#" class="post__like" data-post-id="<?= $post["id"] ?>">
+					<?php endif; ?>
                             <i class="fa fa-thumbs-up like active"></i>
                             <?= $post["likes"] ?>
                         </a>

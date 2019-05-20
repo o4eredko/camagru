@@ -13,7 +13,7 @@
     <div class="container">
         <div class="posts slider">
             <?php foreach ($posts as $post): ?>
-            <div class="col-md-3 col-12">
+            <div class="col-sm-6 col-lg-3 col-12">
                 <div class="post" data-id="<?= $post["id"] ?>">
                     <a href="post?id=<?= $post["id"] ?>" class="post__img">
                         <img src="<?= $post["img"] ?>" alt="">
@@ -37,8 +37,7 @@
                         <a href="post?id= <?= $post["id"] ?>" class="post__comment"
                             <?php if (!isset($_SESSION["user"])): ?>
                                 data-toggle-id="login"
-                            <?php endif; ?>
-                        >
+                            <?php endif; ?>>
                             <i class="fas fa-comment comment"></i><?= $post["comments"] ?>
                         </a>
                         <?php if (isset($_SESSION["user"]) && $post["owner"] == $_SESSION["user"]): ?>

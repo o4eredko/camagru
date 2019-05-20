@@ -19,12 +19,7 @@ if (elem) elem.onclick = function forgotPass(event) {
 
 /*-----------------Forms-----------------*/
 
-function validateEmail(email) {
-	let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-	return re.test(String(email).toLowerCase());
-}
-
-function getLabels(form) {
+function getLabelsErrors(form) {
 	if (!form) return;
 	let labels = {};
 	for (let i = form.elements.length - 1; i >= 0; i--) {
@@ -48,7 +43,7 @@ function validatePass(form, labels) {
 function sendRegistrationForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#registrationForm .loading");
-	let labels = getLabels(e.target);
+	let labels = getLabelsErrors(e.target);
 	let confirmation = document.querySelector("#registrationForm .form__confirmation");
 	if (!validatePass(e.target, labels)) return ;
 	let form = new FormData(e.target);
@@ -77,7 +72,7 @@ function sendRegistrationForm(e) {
 function sendLoginForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#loginForm .loading");
-	let labels = getLabels(e.target);
+	let labels = getLabelsErrors(e.target);
 	let confirmation = document.querySelector("#loginForm .form__confirmation");
 	let form = new FormData(e.target);
 	form.append("action", "login");
@@ -106,7 +101,7 @@ function sendLoginForm(e) {
 function sendChangeForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#changeForm .loading");
-	let labels = getLabels(e.target);
+	let labels = getLabelsErrors(e.target);
 	let confirmation = document.querySelector("#changeForm .form__confirmation");
 	if (!validatePass(e.target, labels)) return;
 	let form = new FormData(e.target);
@@ -137,7 +132,7 @@ function sendChangeForm(e) {
 function sendForgotForm(e) {
 	e.preventDefault();
 	let loading = document.querySelector("#forgotForm .loading");
-	let labels = getLabels(e.target);
+	let labels = getLabelsErrors(e.target);
 	let confirmation = document.querySelector("#forgotForm .form__confirmation");
 	if (!validatePass(e.target, labels)) return ;
 	let toReload = !("email" in labels);
@@ -176,16 +171,17 @@ function sendForgotForm(e) {
 
 function sendUserSettingsForm(e) {
 	e.preventDefault();
-	let labels = getLabels(e.target);
+	let errors = getLabelsErrors(e.target);
 	let data = new FormData(e.target);
 	let xhr = new XMLHttpRequest();
 
-	data.append("action", "userInfo");
+	data.append("action", "changeUserInfo");
 	xhr.open("POST", "ajax", true);
 	xhr.send(data);
 	xhr.onreadystatechange = () => {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			console.log("ZAEBUMBA");
+			let arr = JSON.parse(xhr.responseText);
+			errors.username.hidden = !arr["user_exists"];
 			location.reload();
 		}
 	}
@@ -247,10 +243,12 @@ if (elem && $_GET["action"] === "forgot" && "id" in $_GET && "token" in $_GET) {
 
 function likePost(e) {
 	e.preventDefault();
+	if (!e.currentTarget.getAttribute("data-post-id"))
+		return ;
 	let link = e.currentTarget;
 	let liked = link.classList.contains("active");
 	let xhr = new XMLHttpRequest();
-	let params = "?action=like&post_id=" + e.target.getAttribute("data-post-id") + "&liked=" + liked;
+	let params = "?action=like&post_id=" + e.currentTarget.getAttribute("data-post-id") + "&liked=" + liked;
 
 	xhr.open("GET", "ajax" + params, true);
 	xhr.setRequestHeader("Content-type", "application/json");
@@ -353,7 +351,7 @@ for (let i = elem.length - 1; i >= 0; i--)
 /*-----------------Pagination-----------------*/
 
 function pagination(slider, settings) {
-	if (!slider) return;
+	if (!slider || !slider.children.length) return;
 	settings.maxPages = Math.ceil(slider.children.length / settings.maxElems);
 	let i = 0;
 	let len = slider.children.length;
@@ -454,11 +452,11 @@ function delSnapshot(e) {
 }
 
 const camSupported = "mediaDevices" in navigator;
+const snapButton = document.getElementById("snap-button");
 const cam = document.getElementById("cam");
 if (camSupported && cam) {
 	const snapshot = document.getElementById("snapshot");
 	const context = snapshot.getContext("2d");
-	const snapButton = document.getElementById("snap-button");
 
 	navigator.mediaDevices.getUserMedia({video: true})
 	.then((stream) => {
@@ -469,14 +467,15 @@ if (camSupported && cam) {
 			snapshot.width = parseInt(camStyles.width);
 			cam.hidden = true;
 			function step() {
-				context.drawImage(cam, 0, 0);
+				context.drawImage(cam, 0, 0, snapshot.width, snapshot.height);
 				requestAnimationFrame(step);
 			}
 			requestAnimationFrame(step);
 		});
 	});
 
-	snapButton.onclick = () => {
+	function takePhoto(e) {
+		e.target.onclick = null;
 		const overlays = document.querySelectorAll(".snapshot__area .dragImg img");
 		let overlaysToUpload = [];
 		let data = new FormData;
@@ -603,6 +602,7 @@ function dragImgOnCanvas(e) {
 }
 
 function appendSticker(e) {
+	snapButton.onclick = takePhoto;
 	let container = document.querySelector(".snapshot__area");
 	let wrapper = document.createElement("div");
 	const resizerPos = [
@@ -636,6 +636,8 @@ function appendSticker(e) {
 	wrapper.appendChild(elem);
 	elem.addEventListener("click", (e) => {
 		e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+		if (document.querySelectorAll(".dragImg").length <= 0)
+			snapButton.onclick = null;
 	});
 	container.appendChild(wrapper);
 }
@@ -650,7 +652,6 @@ if (elem) {
 	function handleStickerDrop(e) {
 		let dt = e.dataTransfer;
 		let files = dt.files;
-		console.log(files);
 	}
 
 	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
