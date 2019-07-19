@@ -5,6 +5,7 @@
  * Date: 28.04.2019
  * Time: 19:03
  */
+session_start();
 
 require_once "application/lib/Dev.php";
 use application\core\Router;
@@ -17,5 +18,4 @@ spl_autoload_register(function ($class) {
 		require_once $path;
 	}
 });
-session_start();
 $router = new Router();
