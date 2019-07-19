@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Scur
- * Date: 01.05.2019
- * Time: 16:51
- */
 
 namespace application\models;
 
@@ -93,7 +87,6 @@ class Main extends Model {
 				$tmpline = "";
 			}
 		}
-		echo "Tables imported successfully";
 		header("Location: /");
 	}
 
