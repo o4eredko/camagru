@@ -293,7 +293,7 @@ class Ajax extends Model {
 			imagecopyresampled($out, $rotatedImage, $overlay->posX, $overlay->posY, 0, 0,
 				$overlay->width, $overlay->height, $overlay->width, $overlay->height);
 		}
-		$imgName = "img/" . $_SESSION["user"] ."_" . $this->generateToken(8) . ".jpg";
+		$imgName = "gs://camagru-247108.appspot.com/" . $_SESSION["user"] ."_" . $this->generateToken(8) . ".jpg";
 		imagejpeg($out, $imgName, 100);
 		$sql = "INSERT INTO `snapshots` SET owner=?, img=?";
 		$this->db->query($sql, [$_SESSION["user"], $imgName]);
